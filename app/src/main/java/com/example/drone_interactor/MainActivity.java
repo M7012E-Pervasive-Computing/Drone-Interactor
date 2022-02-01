@@ -1,32 +1,5 @@
 package com.example.drone_interactor;
 
-//import android.Manifest;
-//import android.content.pm.PackageManager;
-//import android.os.AsyncTask;
-//import android.os.Build;
-//import android.os.Bundle;
-//import android.content.Intent;
-//import android.os.Handler;
-//import android.os.Looper;
-//import android.util.Log;
-//import android.widget.Toast;
-//
-//import androidx.annotation.NonNull;
-//import androidx.appcompat.app.AppCompatActivity;
-//import androidx.core.app.ActivityCompat;
-//import androidx.core.content.ContextCompat;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.concurrent.atomic.AtomicBoolean;
-//
-//import dji.common.error.DJIError;
-//import dji.common.error.DJISDKError;
-//import dji.sdk.base.BaseComponent;
-//import dji.sdk.base.BaseProduct;
-//import dji.sdk.sdkmanager.DJISDKInitEvent;
-//import dji.sdk.sdkmanager.DJISDKManager;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -41,6 +14,9 @@ import android.os.Handler;
 import android.os.Looper;
 
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -57,10 +33,15 @@ import dji.thirdparty.afinal.core.AsyncTask;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    Button startButton;
+
     private static final String TAG = MainActivity.class.getName();
     public static final String FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
     private static BaseProduct mProduct;
     private Handler mHandler;
+
+
 
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
@@ -94,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
 
         //Initialize DJI SDK Manager
         mHandler = new Handler(Looper.getMainLooper());
+
+        new ViewListeners((Button) findViewById(R.id.startButton), (Button) findViewById(R.id.stopButton), (EditText) findViewById(R.id.ipAndPort));
 
     }
 
@@ -205,11 +188,12 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void onInitProcess(DJISDKInitEvent djisdkInitEvent, int i) {
-
+                            Log.d(TAG, "init process: " + djisdkInitEvent);
                         }
 
                         @Override
                         public void onDatabaseDownloadProgress(long l, long l1) {
+                            Log.d(TAG, "download: " + l + ", " + l1);
 
                         }
                     });
