@@ -72,4 +72,37 @@
         android:layout_height="wrap_content"
         app:constraint_referenced_ids="textView,ipAndPort" />
 
+    <TextView
+        android:id="@+id/debugText"
+        android:layout_width="570dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="355dp"
+        android:layout_marginTop="39dp"
+        android:layout_marginEnd="355dp"
+        android:layout_marginBottom="275dp"
+        android:text="@string/debugText"
+        android:textSize="34sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ipAndPort" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="17dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/motors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="107dp"
+        android:layout_marginTop="18dp"
+        app:layout_constraintStart_toEndOf="@+id/name"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

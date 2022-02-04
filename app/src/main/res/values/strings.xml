@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Drone-Interactor</string>
+    <string name="debugText">default</string>
 </resources>

@@ -14,9 +14,9 @@ import android.os.Handler;
 import android.os.Looper;
 
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.thirdparty.afinal.core.AsyncTask;
@@ -40,8 +41,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
     private static BaseProduct mProduct;
     private Handler mHandler;
+    private static MainActivity instance = null;
 
+    public MainActivity() {
+        MainActivity.instance = this;
+    }
 
+    public static MainActivity getInstance() {
+        return MainActivity.instance;
+    }
 
     private static final String[] REQUIRED_PERMISSION_LIST = new String[]{
             Manifest.permission.VIBRATE,
@@ -136,13 +144,23 @@ public class MainActivity extends AppCompatActivity {
                     DJISDKManager.getInstance().registerApp(MainActivity.this.getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
                         @Override
                         public void onRegister(DJIError djiError) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainActivity.this.setDisplayContent(null);
+                                }
+                            });
+
                             if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
                                 showToast("Register Success");
-                                DJISDKManager.getInstance().startConnectionToProduct();
+                                Log.e(TAG, "WHILE REGISTERING " + String.valueOf(DJISDKManager.getInstance().startConnectionToProduct()));
+                                // DJISDKManager.getInstance().getFlightHubManager()
+                                //((TextView) findViewById(R.id.debugText)).setText(String.valueOf(DJISDKManager.getInstance().startConnectionToProduct()));
                             } else {
                                 showToast("Register sdk fails, please check the bundle id and network connection!");
                             }
                             Log.v(TAG, djiError.getDescription());
+
                         }
 
                         @Override
@@ -150,6 +168,12 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "onProductDisconnect");
                             showToast("Product Disconnected");
                             notifyStatusChange();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainActivity.this.setDisplayContent(null);
+                                }
+                            });
 
                         }
                         @Override
@@ -157,18 +181,38 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
                             showToast("Product Connected");
                             notifyStatusChange();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainActivity.this.setDisplayContent(baseProduct);
+                                }
+                            });
+                            DroneDataProcessing con = new DroneDataProcessing();
+                            TextView[] textViews = new TextView[] {
+                                findViewById(R.id.debugText),
+                                findViewById(R.id.motors)
+                            };
+                            con.test(textViews, ((Aircraft)DJISDKManager.getInstance().getProduct()));
 
+                            MainActivity.this.mProduct = baseProduct;
                         }
 
                         @Override
                         public void onProductChanged(BaseProduct baseProduct) {
                             Log.d(TAG, String.format("onProductChanged newProduct:%s", baseProduct));
+                            MainActivity.this.mProduct = baseProduct;
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainActivity.this.setDisplayContent(baseProduct);
+                                }
+                            });
                         }
 
                         @Override
                         public void onComponentChange(BaseProduct.ComponentKey componentKey, BaseComponent oldComponent,
                                                       BaseComponent newComponent) {
-
                             if (newComponent != null) {
                                 newComponent.setComponentListener(new BaseComponent.ComponentListener() {
 
@@ -179,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             }
+                            //((TextView) findViewById(R.id.debugText)).setText("COMP CHANGE");
                             Log.d(TAG,
                                     String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
                                             componentKey,
@@ -199,6 +244,14 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
+        }
+    }
+
+    private void setDisplayContent(BaseProduct baseProduct) {
+        if (baseProduct == null) {
+            ((TextView) findViewById(R.id.name)).setText("Disconnected");
+        } else {
+            ((TextView) findViewById(R.id.name)).setText("Connected to " + baseProduct.getModel().getDisplayName());
         }
     }
 
@@ -225,6 +278,14 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), toastMsg, Toast.LENGTH_LONG).show();
             }
         });
+    }
 
+    public void setText(TextView textView, String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(text);
+            }
+        });
     }
 }
