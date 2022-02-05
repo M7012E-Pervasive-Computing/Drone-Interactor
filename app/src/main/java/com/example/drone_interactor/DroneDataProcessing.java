@@ -21,6 +21,11 @@ public class DroneDataProcessing {
     private static final String TAG = DroneDataProcessing.class.getName();
 
 
+    /**
+     * textViews are as follows:
+     *   index 0: mainDisplay
+     *   index 1: motors on or off
+     */
     public void test(TextView[] textViews, Aircraft aircraft) {
         Log.i(TAG, "TEST IS WORKING");
         textViews[0].setText("TEST IS WORKING");
@@ -29,7 +34,8 @@ public class DroneDataProcessing {
             @Override
             public void onUpdate(@NonNull FlightControllerState flightControllerState) {
                 MainActivity.getInstance().setText(textViews[0], "x: " + String.valueOf(flightControllerState.getVelocityX()) + " , y: " + String.valueOf(flightControllerState.getVelocityY()) + " , z: " + String.valueOf(flightControllerState.getVelocityZ()));
-                MainActivity.getInstance().setText(textViews[1], flightControllerState.areMotorsOn() == true ? "Motors are on" : "Motors are turned off");
+                String motorsOnText = flightControllerState.areMotorsOn() == true ? "Motors are on" : "Motors are turned off";
+                MainActivity.getInstance().setText(textViews[1], motorsOnText);
             }
         });
         // new FlightController();
