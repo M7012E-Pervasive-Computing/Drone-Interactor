@@ -25,8 +25,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
+import dji.common.flightcontroller.VisionControlState;
+import dji.common.flightcontroller.VisionDetectionState;
+import dji.common.flightcontroller.flightassistant.ObstacleAvoidanceSensorState;
+import dji.common.util.CommonCallbacks;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.flightcontroller.FlightAssistant;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -187,12 +192,44 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this.setDisplayContent(baseProduct);
                                 }
                             });
-                            DroneDataProcessing con = new DroneDataProcessing();
+
                             TextView[] textViews = new TextView[] {
                                 findViewById(R.id.debugText),
-                                findViewById(R.id.motors)
+                                findViewById(R.id.motors),
+                                findViewById(R.id.distanceX),
+                                findViewById(R.id.distanceY),
+                                findViewById(R.id.distanceZ),
+                                findViewById(R.id.currentHeight),
                             };
-                            con.test(textViews, ((Aircraft)DJISDKManager.getInstance().getProduct()));
+                            DroneDataProcessing con = new DroneDataProcessing(textViews);
+                            con.test((Aircraft)DJISDKManager.getInstance().getProduct());
+//                            new FlightAssistant().setObstacleAvoidanceSensorStateListener(new CommonCallbacks.CompletionCallbackWith<ObstacleAvoidanceSensorState>() {
+//                                @Override
+//                                public void onSuccess(ObstacleAvoidanceSensorState obstacleAvoidanceSensorState) {
+//                                    Log.i(TAG, "SUCCESS");
+//                                    Log.i(TAG, "OBSTACLE " + obstacleAvoidanceSensorState.toString());
+//                                }
+//
+//                                @Override
+//                                public void onFailure(DJIError djiError) {
+//
+//                                }
+//                            });
+//                            new FlightAssistant().setVisionDetectionStateUpdatedCallback(new VisionDetectionState.Callback() {
+//                                @Override
+//                                public void onUpdate(@NonNull VisionDetectionState visionDetectionState) {
+//                                    Log.e(TAG, "METERS: " + visionDetectionState.getObstacleDistanceInMeters());
+//                                    Log.e(TAG, "Test");
+//                                    Log.e(TAG, "Length of sensors " + visionDetectionState.getDetectionSectors());
+//                                }
+//                            });
+
+                            new VisionDetectionState.Callback() {
+                                @Override
+                                public void onUpdate(@NonNull VisionDetectionState visionDetectionState) {
+                                    Log.i(TAG, "vision distance: " + visionDetectionState.getObstacleDistanceInMeters());
+                                }
+                            };
 
                             MainActivity.this.mProduct = baseProduct;
                         }

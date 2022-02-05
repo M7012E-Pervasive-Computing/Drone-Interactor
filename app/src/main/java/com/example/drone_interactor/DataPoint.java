@@ -14,4 +14,22 @@ public class DataPoint {
     public double[] getData() {
         return new double[]{this.x, this.y, this.z};
     }
+
+    public double getX() {
+        return this.x;
+    }
+
+    public double getY() {
+        return this.y;
+    }
+
+    public double getZ() {
+        return this.z;
+    }
+
+    public void setData(double x, double y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
 }
