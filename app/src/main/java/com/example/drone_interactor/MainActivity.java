@@ -25,13 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
-import dji.common.flightcontroller.VisionControlState;
 import dji.common.flightcontroller.VisionDetectionState;
-import dji.common.flightcontroller.flightassistant.ObstacleAvoidanceSensorState;
-import dji.common.util.CommonCallbacks;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
-import dji.sdk.flightcontroller.FlightAssistant;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -193,16 +189,20 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
 
-                            TextView[] textViews = new TextView[] {
+                            TextViews textViews = new TextViews(
                                 findViewById(R.id.debugText),
                                 findViewById(R.id.motors),
                                 findViewById(R.id.distanceX),
                                 findViewById(R.id.distanceY),
                                 findViewById(R.id.distanceZ),
-                                findViewById(R.id.currentHeight),
-                            };
+                                findViewById(R.id.downwardDistance),
+                                findViewById(R.id.currentAngle),
+                                findViewById(R.id.forwardDistance),
+                                findViewById(R.id.backwardDistance),
+                                findViewById(R.id.upwardDistance));
                             DroneDataProcessing con = new DroneDataProcessing(textViews);
                             con.test((Aircraft)DJISDKManager.getInstance().getProduct());
+                            // baseProduct.
 //                            new FlightAssistant().setObstacleAvoidanceSensorStateListener(new CommonCallbacks.CompletionCallbackWith<ObstacleAvoidanceSensorState>() {
 //                                @Override
 //                                public void onSuccess(ObstacleAvoidanceSensorState obstacleAvoidanceSensorState) {

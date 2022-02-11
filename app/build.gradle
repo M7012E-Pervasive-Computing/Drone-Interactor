@@ -69,8 +69,8 @@ dependencies {
          * is called.
          * Both will greatly reducing the size of the APK.
          */
-        exclude module: 'library-anti-distortion'
-        //exclude module: 'fly-safe-database'
+        // exclude module: 'library-anti-distortion'
+        // exclude module: 'fly-safe-database'
     })
     compileOnly 'com.dji:dji-sdk-provided:4.16'
 }

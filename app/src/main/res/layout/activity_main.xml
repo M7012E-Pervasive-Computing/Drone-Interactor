@@ -23,14 +23,14 @@
         android:id="@+id/textView"
         android:layout_width="570dp"
         android:layout_height="45dp"
-        android:layout_marginStart="355dp"
-        android:layout_marginEnd="355dp"
+        android:layout_marginStart="274dp"
+        android:layout_marginEnd="300dp"
         android:text="Insert IP and port"
         android:textColor="#FFFFFF"
         android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/ipAndPort"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/distanceY" />
 
     <Button
         android:id="@+id/startButton"
@@ -48,8 +48,8 @@
         android:id="@+id/ipAndPort"
         android:layout_width="570dp"
         android:layout_height="90dp"
-        android:layout_marginStart="355dp"
-        android:layout_marginEnd="355dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginEnd="300dp"
         android:layout_marginBottom="364dp"
         android:ems="10"
         android:hint="ip:port"
@@ -57,8 +57,7 @@
         android:textSize="32sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/downwardDistance" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group"
@@ -75,16 +74,14 @@
     <TextView
         android:id="@+id/debugText"
         android:layout_width="570dp"
-        android:layout_height="50dp"
-        android:layout_marginStart="355dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="44dp"
         android:layout_marginTop="39dp"
-        android:layout_marginEnd="355dp"
-        android:layout_marginBottom="275dp"
+        android:layout_marginEnd="300dp"
         android:text="@string/debugText"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/forwardDistance"
         app:layout_constraintTop_toBottomOf="@+id/ipAndPort" />
 
     <TextView
@@ -137,13 +134,53 @@
         app:layout_constraintTop_toBottomOf="@+id/distanceY" />
 
     <TextView
-        android:id="@+id/currentHeight"
-        android:layout_width="280dp"
+        android:id="@+id/downwardDistance"
+        android:layout_width="350dp"
         android:layout_height="50dp"
         android:layout_marginStart="16dp"
-        android:text="Current Height:"
+        android:text="Downward Distance:"
+        android:textSize="32sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentAngle" />
+
+    <TextView
+        android:id="@+id/currentAngle"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:text="Current angle:"
         android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/distanceZ" />
+
+    <TextView
+        android:id="@+id/forwardDistance"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:text="Forward distance: "
+        android:textSize="32sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/downwardDistance" />
+
+    <TextView
+        android:id="@+id/backwardDistance"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:text="Backward distance: "
+        android:textSize="32sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forwardDistance" />
+
+    <TextView
+        android:id="@+id/upwardDistance"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:text="Upward distance: "
+        android:textSize="32sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/backwardDistance" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
