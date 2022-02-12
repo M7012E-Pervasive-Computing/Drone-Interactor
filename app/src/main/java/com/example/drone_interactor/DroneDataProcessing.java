@@ -26,6 +26,7 @@ public class DroneDataProcessing {
     public DataPoint currentPosition; // in meters distance from start
 
     public double currentAngle;
+    public double height = 0;
 
     private FlightController flightController;
     private static final String TAG = DroneDataProcessing.class.getName();
@@ -55,7 +56,7 @@ public class DroneDataProcessing {
                 this.millisecondsBefore = currentTimeMillis();
                 // set new data
                 DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
-                DroneDataProcessing.this.setCurrentAngle(flightControllerState.getAttitude().yaw);
+                DroneDataProcessing.this.setCurrentAngleAndHeight(flightControllerState.getAttitude().yaw, flightControllerState.getUltrasonicHeightInMeters());
             }
         });
     }
@@ -80,7 +81,8 @@ public class DroneDataProcessing {
                     int backwardDistance = perceptionInformation.getDistances()[45];
                     int downwardDistance = perceptionInformation.getDownwardObstacleDistance();
                     int upwardDistance = perceptionInformation.getUpwardObstacleDistance();
-                    DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance, downwardDistance);
+                    // MainActivity.getInstance().setText(textViews.debugText, upwardDistance + "MM");
+                    DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance);
                 }
             }
 
@@ -112,10 +114,13 @@ public class DroneDataProcessing {
                 (double)(round(newZ * 100)) / 100);
     }
 
-    public void setCurrentAngle(double yaw) {
+    public void setCurrentAngleAndHeight(double yaw, double height) {
         this.currentAngle = yaw;
         MainActivity.getInstance().setText(this.textViews.currentAngle,
                 "Current angle: " + (double)(round(yaw * 1000) / 1000));
+        this.height = height;
+        MainActivity.getInstance().setText(this.textViews.downwardDistance,
+                "Downward: " + Double.valueOf(round(height * 100)) / 100);
     }
 
     public void setDroneStatus(Boolean motorsOn) {
@@ -128,34 +133,40 @@ public class DroneDataProcessing {
      * @param forwardDistance in meters
      * @param backwardDistance in meters
      * @param upwardDistance in meters
-     * @param downwardDistance in meters
      */
     public void setNewDataPoint(double forwardDistance, double backwardDistance,
-                                double upwardDistance, double downwardDistance) {
-
+                                double upwardDistance) {
         MainActivity.getInstance().setText(this.textViews.forwardDistance,
-                "Forward distance: " + forwardDistance / 10 + " cm");
+                "Forward: " + Double.valueOf(round(forwardDistance / 10)) / 100 + " m");
         MainActivity.getInstance().setText(this.textViews.backwardDistance,
-                "Backward distance: " + backwardDistance / 10 + " cm");
+                "Backward: " + Double.valueOf(round(backwardDistance / 10)) / 100 + " m");
         MainActivity.getInstance().setText(this.textViews.upwardDistance,
-                "Upward distance: " + upwardDistance / 10 + " cm");
-        MainActivity.getInstance().setText(this.textViews.downwardDistance,
-                "Downward distance: " + downwardDistance / 10 + " cm");
+                "Upward: " + Double.valueOf(round(upwardDistance / 10)) / 100 + " m");
+        // MainActivity.getInstance().setText(this.textViews.downwardDistance,
+          //      "Downward: " + Double.valueOf(round(downwardDistance / 10)) / 100 + " m");
         double angle = this.currentAngle;
-        if (angle < 0) {
-            angle = 180 - angle;
-        }
+        // if (angle < 0) {
+        //     angle = 180 - angle;
+        // }
         this.dataPoints = new ArrayList<DataPoint>();
-        double forwardXPlace = this.currentPosition.getX() + forwardDistance * Math.cos(Math.toRadians(angle));
-        double forwardYPlace = this.currentPosition.getY() + forwardDistance * Math.sin(Math.toRadians(angle));
+        double forwardXPlace = this.currentPosition.getX() + forwardDistance / 1000 * Math.cos(Math.toRadians(angle));
+        double forwardYPlace = this.currentPosition.getY() + forwardDistance / 1000 * Math.sin(Math.toRadians(angle));
 
-        double backwardXPlace = this.currentPosition.getX() + backwardDistance * Math.cos(Math.toRadians(angle + 180d));
-        double backwardYPlace = this.currentPosition.getY() + backwardDistance * Math.sin(Math.toRadians(angle + 180d));
+        double backwardXPlace = this.currentPosition.getX() + backwardDistance / 1000 * Math.cos(Math.toRadians(angle + 180d));
+        double backwardYPlace = this.currentPosition.getY() + backwardDistance / 1000 * Math.sin(Math.toRadians(angle + 180d));
 
-        this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
-        this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
-        this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance));
-        this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() - downwardDistance));
+        if (forwardDistance < 60000) {
+            // this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
+        }
+        if (backwardDistance < 60000) {
+            // this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
+        }
+        if (upwardDistance < 60000) {
+            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance));
+        }
+        if (this.height != 0) {
+            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() - this.height));
+        }
         MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + Arrays.toString(this.dataPoints.toArray()));
     }
 
