@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import dji.common.error.DJIError;
@@ -20,7 +21,7 @@ import dji.sdk.products.Aircraft;
 @SuppressLint("SetTextI18n")
 public class DroneDataProcessing {
 
-    public DataPoint[] dataPoints;
+    public ArrayList<DataPoint> dataPoints;
 
     public DataPoint currentPosition; // in meters distance from start
 
@@ -33,6 +34,7 @@ public class DroneDataProcessing {
     public DroneDataProcessing(TextViews textViews) {
         this.textViews = textViews;
         this.currentPosition = new DataPoint(0, 0, 0);
+        this.dataPoints = new ArrayList<DataPoint>();
     }
 
     public void startPositionListener(Aircraft aircraft) {
@@ -74,134 +76,23 @@ public class DroneDataProcessing {
                 // MainActivity.getInstance().setText(textViews.debugText, Arrays.toString(perceptionInformation.getDistances()));
                 if (perceptionInformation.getDistances().length > 0 &&
                         perceptionInformation.getDistances().length >= 45) {
-                    MainActivity.getInstance().setText(textViews.forwardDistance,
-                            "Forward distance: " +
-                                Double.valueOf(perceptionInformation.getDistances()[0]) / 1000);
-                    MainActivity.getInstance().setText(textViews.backwardDistance,
-                            "Backward distance: " +
-                                Double.valueOf(perceptionInformation.getDistances()[45]) / 1000);
+                    int forwardDistance = perceptionInformation.getDistances()[0];
+                    int backwardDistance = perceptionInformation.getDistances()[45];
+                    int downwardDistance = perceptionInformation.getDownwardObstacleDistance();
+                    int upwardDistance = perceptionInformation.getUpwardObstacleDistance();
+                    DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance, downwardDistance);
                 }
-                MainActivity.getInstance().setText(textViews.upwardDistance, "Upward distance: " + Double.valueOf(perceptionInformation.getUpwardObstacleDistance()) / 1000);
-//                if (index > 0) {
-//                    int[] distances = perceptionInformation.getDistances();
-//                    if (distances.length >= index - 1) {
-//                        MainActivity.getInstance().setText(textViews[7], "METERS FORWARD: " + perceptionInformation.getDistances()[perceptionInformation.getDataPackageIndex() - 2]);
-//                    } else {
-//                        MainActivity.getInstance().setText(textViews[0], "INDEX length is not larger " + distances.length + " : " + index);
-//                    }
-//                } else {
-//                    MainActivity.getInstance().setText(textViews[0], "INDEX < 0" + index);
-//                }
             }
 
             @Override
             public void onFailure(DJIError djiError) {
-
+                MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, djiError.getDescription());
             }
         });
     }
 
-    public void test(Aircraft aircraft) {
-//        aircraft.getFlightController().getFlightAssistant().getVisualObstaclesAvoidanceDistance(PerceptionInformation.DJIFlightAssistantObstacleSensingDirection.Upward, new CommonCallbacks.CompletionCallbackWith<Float>() {
-//            @Override
-//            public void onSuccess(Float aFloat) {
-//                MainActivity.getInstance().setText(textViews[0], "SUCCESS FLOAT: " + aFloat);
-//            }
-//
-//            @Override
-//            public void onFailure(DJIError djiError) {
-//                MainActivity.getInstance().setText(textViews[0], "ERROR FLOAT: " + djiError.toString());
-//            }
-//        });
-        aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(new CommonCallbacks.CompletionCallbackWith<PerceptionInformation>() {
-            @Override
-            public void onSuccess(PerceptionInformation perceptionInformation) {
-                // MainActivity.getInstance().setText(textViews[7], "METERS UP: " + perceptionInformation.getUpwardObstacleDistance());
-                // MainActivity.getInstance().setText(textViews[0], "INDEX: " + perceptionInformation.getDataPackageIndex());
-                MainActivity.getInstance().setText(textViews.debugText, Arrays.toString(perceptionInformation.getDistances()));
-                int index = perceptionInformation.getDataPackageIndex();
-                if (perceptionInformation.getDistances().length > 0 && perceptionInformation.getDistances().length >= 89) {
-                    MainActivity.getInstance().setText(textViews.forwardDistance, "Forward distance: " + Double.valueOf(perceptionInformation.getDistances()[0]) / 1000);
-                    MainActivity.getInstance().setText(textViews.backwardDistance, "Backward distance: " + Double.valueOf(perceptionInformation.getDistances()[45]) / 1000);
-                }
-                MainActivity.getInstance().setText(textViews.upwardDistance, "Upward distance: " + Double.valueOf(perceptionInformation.getUpwardObstacleDistance()) / 1000);
-//                if (index > 0) {
-//                    int[] distances = perceptionInformation.getDistances();
-//                    if (distances.length >= index - 1) {
-//                        MainActivity.getInstance().setText(textViews[7], "METERS FORWARD: " + perceptionInformation.getDistances()[perceptionInformation.getDataPackageIndex() - 2]);
-//                    } else {
-//                        MainActivity.getInstance().setText(textViews[0], "INDEX length is not larger " + distances.length + " : " + index);
-//                    }
-//                } else {
-//                    MainActivity.getInstance().setText(textViews[0], "INDEX < 0" + index);
-//                }
-            }
-
-            @Override
-            public void onFailure(DJIError djiError) {
-
-            }
-        });
-//        aircraft.getFlightController().getFlightAssistant().setVisionDetectionStateUpdatedCallback(new VisionDetectionState.Callback()  {
-//            @Override
-//            public void onUpdate(@NonNull VisionDetectionState visionDetectionState) {
-//                // MainActivity.getInstance().setText(textViews[0], visionDetectionState.getObstacleDistanceInMeters() + "----------");
-//                if (visionDetectionState.getDetectionSectors() != null) {
-//                    MainActivity.getInstance().setText(textViews[0], visionDetectionState.getDetectionSectors().length + "length");
-//                } else {
-//                    MainActivity.getInstance().setText(textViews[0], "null - length");
-//                }
-//
-//                MainActivity.getInstance().setText(textViews[7], "METERS: " + visionDetectionState.getSystemWarning());
-////                ObstacleDetectionSector[] sensors = visionDetectionState.getDetectionSectors();
-////                if (sensors.length > 0) {
-////                    if (sensors[0].getObstacleDistanceInMeters() > 0) {
-////                        MainActivity.getInstance().setText(textViews[7], "Forward distancess: " + sensors[0].getObstacleDistanceInMeters());
-////                    } else {
-////                        MainActivity.getInstance().setText(textViews[7], "length is 0");
-////                    }
-////
-////                } else {
-////                    MainActivity.getInstance().setText(textViews[7], "length 0");
-////                }
-//            }
-//        });
-
-//        Radar radar = aircraft.getRadar();
-//        if (radar != null) {
-//            Log.e(TAG, "RADAR: " + radar);
-//            Log.e(TAG, "RADAR CONNECTED: " + radar.isConnected());
-//            //textViews[0].setText("RADAR NOT NULL");
-//            MainActivity.getInstance().setText(textViews[0], "RADAR NOT NULL");
-//        } else {
-//            // textViews[0].setText("RADAR NULL");
-//            MainActivity.getInstance().setText(textViews[0], "RADAR NULL");
-//        }
-
-        // Log.e(TAG, "RADAR: " + radar);
-        // Log.e(TAG, "RADAR CONNECTED: " + radar.isConnected());
-        // radar.setHorizontalRadarObstacleAvoidanceEnabled(true, djiError -> Log.e(TAG, "ON RESULT HORIZONTAL RADAR" + djiError.toString()));
-
-        aircraft.getFlightController().setStateCallback(new FlightControllerState.Callback() {
-            private long milisecondsBefore = -1;
-
-            @Override
-            public void onUpdate(@NonNull FlightControllerState flightControllerState) {
-                if (this.milisecondsBefore != -1) {
-                    // set new distance
-                    long currentTime = currentTimeMillis();
-                    DroneDataProcessing.this.setNewCurrentPosition(
-                            flightControllerState.getVelocityX(),
-                            flightControllerState.getVelocityY(),
-                            flightControllerState.getVelocityZ(),
-                            (currentTime - this.milisecondsBefore));
-                }
-                this.milisecondsBefore = currentTimeMillis();
-                // set new data
-                DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
-                DroneDataProcessing.this.setCurrentAngle(flightControllerState.getAttitude().yaw);
-            }
-        });
+    public void stopSensorListener(Aircraft aircraft) {
+        aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(null);
     }
 
     public void setNewCurrentPosition(double xVelocity,
@@ -212,6 +103,7 @@ public class DroneDataProcessing {
         double newY = this.currentPosition.getY() + yVelocity * (dtMillis / 1000);
         double newZ = this.currentPosition.getZ() + zVelocity * (dtMillis / 1000);
         this.currentPosition.setData(newX, newY, newZ);
+
         MainActivity.getInstance().setText(this.textViews.distanceX, "x: " +
                 (double)(round(newX * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceY, "y: " +
@@ -242,13 +134,29 @@ public class DroneDataProcessing {
                                 double upwardDistance, double downwardDistance) {
 
         MainActivity.getInstance().setText(this.textViews.forwardDistance,
-                "Forward distance: " + forwardDistance + " m");
+                "Forward distance: " + forwardDistance / 10 + " cm");
         MainActivity.getInstance().setText(this.textViews.backwardDistance,
-                "Backward distance: " + backwardDistance + " m");
+                "Backward distance: " + backwardDistance / 10 + " cm");
         MainActivity.getInstance().setText(this.textViews.upwardDistance,
-                "Upward distance: " + upwardDistance + " m");
+                "Upward distance: " + upwardDistance / 10 + " cm");
         MainActivity.getInstance().setText(this.textViews.downwardDistance,
-                "Downward distance: " + downwardDistance + " m");
+                "Downward distance: " + downwardDistance / 10 + " cm");
+        double angle = this.currentAngle;
+        if (angle < 0) {
+            angle = 180 - angle;
+        }
+        this.dataPoints = new ArrayList<DataPoint>();
+        double forwardXPlace = this.currentPosition.getX() + forwardDistance * Math.cos(Math.toRadians(angle));
+        double forwardYPlace = this.currentPosition.getY() + forwardDistance * Math.sin(Math.toRadians(angle));
+
+        double backwardXPlace = this.currentPosition.getX() + backwardDistance * Math.cos(Math.toRadians(angle + 180d));
+        double backwardYPlace = this.currentPosition.getY() + backwardDistance * Math.sin(Math.toRadians(angle + 180d));
+
+        this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
+        this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
+        this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance));
+        this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() - downwardDistance));
+        MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + Arrays.toString(this.dataPoints.toArray()));
     }
 
 

@@ -32,4 +32,8 @@ public class DataPoint {
         this.y = y;
         this.z = z;
     }
+
+    public String toString() {
+        return "x: " + this.x + "; y: " + this.y + "; z: " + this.z;
+    }
 }

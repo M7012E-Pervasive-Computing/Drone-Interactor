@@ -201,7 +201,10 @@ public class MainActivity extends AppCompatActivity {
                                 findViewById(R.id.backwardDistance),
                                 findViewById(R.id.upwardDistance));
                             DroneDataProcessing con = new DroneDataProcessing(textViews);
-                            con.test((Aircraft)DJISDKManager.getInstance().getProduct());
+                            Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+                            con.startPositionListener(aircraft);
+                            con.startSensorListener(aircraft);
+                            // con.test((Aircraft)DJISDKManager.getInstance().getProduct());
                             // baseProduct.
 //                            new FlightAssistant().setObstacleAvoidanceSensorStateListener(new CommonCallbacks.CompletionCallbackWith<ObstacleAvoidanceSensorState>() {
 //                                @Override
