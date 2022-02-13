@@ -4,6 +4,7 @@ import static java.lang.Math.round;
 import static java.lang.System.currentTimeMillis;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
 // import dji.common.flightcontroller.flightassistant.ObstacleActionMode;
+import dji.common.flightcontroller.flightassistant.FaceAwareState;
 import dji.common.flightcontroller.flightassistant.PerceptionInformation;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.flightcontroller.FlightController;
@@ -75,15 +77,17 @@ public class DroneDataProcessing {
             @Override
             public void onSuccess(PerceptionInformation perceptionInformation) {
                 // MainActivity.getInstance().setText(textViews.debugText, Arrays.toString(perceptionInformation.getDistances()));
+                int forwardDistance = 60000;
+                int backwardDistance = 60000;
                 if (perceptionInformation.getDistances().length > 0 &&
                         perceptionInformation.getDistances().length >= 45) {
-                    int forwardDistance = perceptionInformation.getDistances()[0];
-                    int backwardDistance = perceptionInformation.getDistances()[45];
-                    int downwardDistance = perceptionInformation.getDownwardObstacleDistance();
-                    int upwardDistance = perceptionInformation.getUpwardObstacleDistance();
-                    // MainActivity.getInstance().setText(textViews.debugText, upwardDistance + "MM");
-                    DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance);
+                    forwardDistance = perceptionInformation.getDistances()[0];
+                    backwardDistance = perceptionInformation.getDistances()[45];
                 }
+                int upwardDistance = perceptionInformation.getUpwardObstacleDistance();
+                Log.e(TAG, Arrays.toString(perceptionInformation.getDistances()));
+                Log.e(TAG, perceptionInformation.getAngleInterval() + ": ");
+                DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance);
             }
 
             @Override
@@ -142,12 +146,7 @@ public class DroneDataProcessing {
                 "Backward: " + Double.valueOf(round(backwardDistance / 10)) / 100 + " m");
         MainActivity.getInstance().setText(this.textViews.upwardDistance,
                 "Upward: " + Double.valueOf(round(upwardDistance / 10)) / 100 + " m");
-        // MainActivity.getInstance().setText(this.textViews.downwardDistance,
-          //      "Downward: " + Double.valueOf(round(downwardDistance / 10)) / 100 + " m");
         double angle = this.currentAngle;
-        // if (angle < 0) {
-        //     angle = 180 - angle;
-        // }
         this.dataPoints = new ArrayList<DataPoint>();
         double forwardXPlace = this.currentPosition.getX() + forwardDistance / 1000 * Math.cos(Math.toRadians(angle));
         double forwardYPlace = this.currentPosition.getY() + forwardDistance / 1000 * Math.sin(Math.toRadians(angle));
@@ -162,10 +161,10 @@ public class DroneDataProcessing {
             // this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
         }
         if (upwardDistance < 60000) {
-            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance));
+            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance / 1000));
         }
         if (this.height != 0) {
-            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() - this.height));
+            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
         }
         MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + Arrays.toString(this.dataPoints.toArray()));
     }
