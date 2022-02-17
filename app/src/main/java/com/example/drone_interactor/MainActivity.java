@@ -85,7 +85,10 @@ public class MainActivity extends AppCompatActivity {
         //Initialize DJI SDK Manager
         mHandler = new Handler(Looper.getMainLooper());
 
-        new ViewListeners((Button) findViewById(R.id.startButton), (Button) findViewById(R.id.stopButton), (EditText) findViewById(R.id.ipAndPort));
+        new ViewListeners((Button) findViewById(R.id.startButton),
+                (Button) findViewById(R.id.stopButton),
+                (EditText) findViewById(R.id.ipAndPort),
+                (Button) findViewById(R.id.pauseButton));
 
     }
 
@@ -188,22 +191,10 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this.setDisplayContent(baseProduct);
                                 }
                             });
+                            startupClasses();
 
-                            TextViews textViews = new TextViews(
-                                findViewById(R.id.debugText),
-                                findViewById(R.id.motors),
-                                findViewById(R.id.distanceX),
-                                findViewById(R.id.distanceY),
-                                findViewById(R.id.distanceZ),
-                                findViewById(R.id.downwardDistance),
-                                findViewById(R.id.currentAngle),
-                                findViewById(R.id.forwardDistance),
-                                findViewById(R.id.backwardDistance),
-                                findViewById(R.id.upwardDistance));
-                            DroneDataProcessing con = new DroneDataProcessing(textViews);
-                            Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
-                            con.startPositionListener(aircraft);
-                            con.startSensorListener(aircraft);
+//                            con.startPositionListener(aircraft);
+//                            con.startSensorListener(aircraft);
                             // con.test((Aircraft)DJISDKManager.getInstance().getProduct());
                             // baseProduct.
 //                            new FlightAssistant().setObstacleAvoidanceSensorStateListener(new CommonCallbacks.CompletionCallbackWith<ObstacleAvoidanceSensorState>() {
@@ -241,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onProductChanged(BaseProduct baseProduct) {
                             Log.d(TAG, String.format("onProductChanged newProduct:%s", baseProduct));
                             MainActivity.this.mProduct = baseProduct;
+                            startupClasses();
 
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -285,6 +277,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void startupClasses() {
+        TextViews textViews = new TextViews(
+                findViewById(R.id.debugText),
+                findViewById(R.id.motors),
+                findViewById(R.id.distanceX),
+                findViewById(R.id.distanceY),
+                findViewById(R.id.distanceZ),
+                findViewById(R.id.downwardDistance),
+                findViewById(R.id.currentAngle),
+                findViewById(R.id.forwardDistance),
+                findViewById(R.id.backwardDistance),
+                findViewById(R.id.upwardDistance));
+        DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
+        Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+        droneDataProcessing.setup(textViews, aircraft);
+        showToast("Started all classes with parameters");
+
     }
 
     private void setDisplayContent(BaseProduct baseProduct) {

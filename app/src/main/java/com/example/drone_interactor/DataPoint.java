@@ -1,5 +1,7 @@
 package com.example.drone_interactor;
 
+import static java.lang.Math.round;
+
 public class DataPoint {
     private double x;
     private double y;
@@ -34,6 +36,8 @@ public class DataPoint {
     }
 
     public String toString() {
-        return "x: " + this.x + "; y: " + this.y + "; z: " + this.z;
+        return "(X: " + Double.valueOf(round(this.x * 100)) / 100 + "; Y: " +
+                Double.valueOf(round(this.y * 100)) / 100 + "; Z: " +
+                Double.valueOf(round(this.z * 100)) / 100 + ")";
     }
 }

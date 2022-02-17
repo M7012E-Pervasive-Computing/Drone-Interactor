@@ -33,15 +33,30 @@ public class DroneDataProcessing {
     private FlightController flightController;
     private static final String TAG = DroneDataProcessing.class.getName();
     private TextViews textViews;
+    private static DroneDataProcessing INSTANCE = null;
+    private Aircraft aircraft = null;
 
-    public DroneDataProcessing(TextViews textViews) {
+    public static DroneDataProcessing getInstance() {
+        if (DroneDataProcessing.INSTANCE == null) {
+            DroneDataProcessing.INSTANCE = new DroneDataProcessing();
+        }
+        return DroneDataProcessing.INSTANCE;
+    }
+
+    public void setup(TextViews textViews, Aircraft aircraft) {
         this.textViews = textViews;
         this.currentPosition = new DataPoint(0, 0, 0);
         this.dataPoints = new ArrayList<DataPoint>();
+        this.aircraft = aircraft;
+    }
+    private DroneDataProcessing() {
     }
 
-    public void startPositionListener(Aircraft aircraft) {
-        aircraft.getFlightController().setStateCallback(new FlightControllerState.Callback() {
+    private void startPositionListener() {
+        if (this.aircraft == null) {
+            return;
+        }
+        this.aircraft.getFlightController().setStateCallback(new FlightControllerState.Callback() {
             private long millisecondsBefore = -1;
 
             @Override
@@ -63,17 +78,18 @@ public class DroneDataProcessing {
         });
     }
 
-    //                MainActivity.getInstance().setText(textViews.currentHeight,
-//                        "Current Height: " +
-//                                (double)(round(flightControllerState.getUltrasonicHeightInMeters() * 100)) / 100);
-
-
-    public void stopPositionListener(Aircraft aircraft) {
-        aircraft.getFlightController().setStateCallback(null);
+    private void stopPositionListener() {
+        if (this.aircraft == null) {
+            return;
+        }
+        this.aircraft.getFlightController().setStateCallback(null);
     }
 
-    public void startSensorListener(Aircraft aircraft) {
-        aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(new CommonCallbacks.CompletionCallbackWith<PerceptionInformation>() {
+    private void startSensorListener() {
+        if (this.aircraft == null) {
+            return;
+        }
+        this.aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(new CommonCallbacks.CompletionCallbackWith<PerceptionInformation>() {
             @Override
             public void onSuccess(PerceptionInformation perceptionInformation) {
                 // MainActivity.getInstance().setText(textViews.debugText, Arrays.toString(perceptionInformation.getDistances()));
@@ -87,7 +103,7 @@ public class DroneDataProcessing {
                 int upwardDistance = perceptionInformation.getUpwardObstacleDistance();
                 Log.e(TAG, Arrays.toString(perceptionInformation.getDistances()));
                 Log.e(TAG, perceptionInformation.getAngleInterval() + ": ");
-                DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance);
+                DroneDataProcessing.this.setNewDataPoint(forwardDistance, backwardDistance, upwardDistance, perceptionInformation.getDistances(), perceptionInformation.getAngleInterval());
             }
 
             @Override
@@ -97,11 +113,34 @@ public class DroneDataProcessing {
         });
     }
 
-    public void stopSensorListener(Aircraft aircraft) {
-        aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(null);
+    private void stopSensorListener() {
+        if (this.aircraft == null) {
+            return;
+        }
+        this.aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(null);
     }
 
-    public void setNewCurrentPosition(double xVelocity,
+    public void stopAll() {
+        this.stopSensorListener();
+        this.stopPositionListener();
+        this.dataPoints = new ArrayList<DataPoint>();
+        this.currentPosition = new DataPoint(0, 0, 0);
+        this.height = 0;
+        // disconnect
+    }
+
+    public void startAll() {
+        this.startPositionListener();
+        this.startSensorListener();
+        // start sending data
+    }
+
+    public void pause() {
+        // stop sending data
+        this.stopSensorListener();
+    }
+
+    private void setNewCurrentPosition(double xVelocity,
                                       double yVelocity,
                                       double zVelocity,
                                       double dtMillis) {
@@ -118,7 +157,7 @@ public class DroneDataProcessing {
                 (double)(round(newZ * 100)) / 100);
     }
 
-    public void setCurrentAngleAndHeight(double yaw, double height) {
+    private void setCurrentAngleAndHeight(double yaw, double height) {
         this.currentAngle = yaw;
         MainActivity.getInstance().setText(this.textViews.currentAngle,
                 "Current angle: " + (double)(round(yaw * 1000) / 1000));
@@ -127,7 +166,7 @@ public class DroneDataProcessing {
                 "Downward: " + Double.valueOf(round(height * 100)) / 100);
     }
 
-    public void setDroneStatus(Boolean motorsOn) {
+    private void setDroneStatus(Boolean motorsOn) {
         MainActivity.getInstance().setText(this.textViews.motors,
                 motorsOn ? "Motors are on" : "Motors are turned off");
     }
@@ -138,8 +177,8 @@ public class DroneDataProcessing {
      * @param backwardDistance in meters
      * @param upwardDistance in meters
      */
-    public void setNewDataPoint(double forwardDistance, double backwardDistance,
-                                double upwardDistance) {
+    private void setNewDataPoint(double forwardDistance, double backwardDistance,
+                                double upwardDistance, int[] horizontalDistances, float angleDifference) {
         MainActivity.getInstance().setText(this.textViews.forwardDistance,
                 "Forward: " + Double.valueOf(round(forwardDistance / 10)) / 100 + " m");
         MainActivity.getInstance().setText(this.textViews.backwardDistance,
@@ -148,26 +187,36 @@ public class DroneDataProcessing {
                 "Upward: " + Double.valueOf(round(upwardDistance / 10)) / 100 + " m");
         double angle = this.currentAngle;
         this.dataPoints = new ArrayList<DataPoint>();
-        double forwardXPlace = this.currentPosition.getX() + forwardDistance / 1000 * Math.cos(Math.toRadians(angle));
-        double forwardYPlace = this.currentPosition.getY() + forwardDistance / 1000 * Math.sin(Math.toRadians(angle));
 
-        double backwardXPlace = this.currentPosition.getX() + backwardDistance / 1000 * Math.cos(Math.toRadians(angle + 180d));
-        double backwardYPlace = this.currentPosition.getY() + backwardDistance / 1000 * Math.sin(Math.toRadians(angle + 180d));
-
-        if (forwardDistance < 60000) {
-            // this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
+        for (int i = 0; i < horizontalDistances.length; i++) {
+            if (horizontalDistances[i] < 60000 && horizontalDistances[i] > 0) {
+                double xPlace = this.currentPosition.getX() + Double.valueOf(horizontalDistances[i]) / 1000 * Math.cos(Math.toRadians(angle + i * angleDifference));
+                double yPlace = this.currentPosition.getY() + Double.valueOf(horizontalDistances[i]) / 1000 * Math.sin(Math.toRadians(angle + i * angleDifference));
+                this.dataPoints.add(new DataPoint(xPlace, yPlace, this.currentPosition.getZ()));
+            }
         }
-        if (backwardDistance < 60000) {
-            // this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
-        }
-        if (upwardDistance < 60000) {
-            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), this.currentPosition.getZ() + upwardDistance / 1000));
+        if (upwardDistance < 60000 && upwardDistance > 0) {
+            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
         }
         if (this.height != 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
         }
-        MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + Arrays.toString(this.dataPoints.toArray()));
+        MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + this.dataPoints.size() + " : " + Arrays.toString(this.dataPoints.toArray()));
     }
 
+
+//        double forwardXPlace = this.currentPosition.getX() + forwardDistance / 1000 * Math.cos(Math.toRadians(angle));
+//        double forwardYPlace = this.currentPosition.getY() + forwardDistance / 1000 * Math.sin(Math.toRadians(angle));
+//
+//        double backwardXPlace = this.currentPosition.getX() + backwardDistance / 1000 * Math.cos(Math.toRadians(angle + 180d));
+//        double backwardYPlace = this.currentPosition.getY() + backwardDistance / 1000 * Math.sin(Math.toRadians(angle + 180d));
+//
+//
+//        if (forwardDistance < 60000) {
+//            this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
+//        }
+//        if (backwardDistance < 60000) {
+//            this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
+//        }
 
 }

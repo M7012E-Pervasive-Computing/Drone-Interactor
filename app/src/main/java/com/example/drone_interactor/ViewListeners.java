@@ -17,25 +17,29 @@ public class ViewListeners extends AppCompatActivity {
     private final Button startButton;
     private final Button stopButton;
     private final EditText ipAndPort;
+    private final Button pauseButton;
 
     protected String connectionString = "";
 
-    public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort) {
+    public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
+        this.pauseButton = pauseButton;
 
         this.startButton.setOnClickListener(new View.OnClickListener() {
-
-
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on START, " + ViewListeners.this.connectionString);
+                DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
+                droneDataProcessing.startAll();
             }
         });
 
         this.stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on STOP");
+                DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
+                droneDataProcessing.stopAll();
             }
         });
 
@@ -55,6 +59,13 @@ public class ViewListeners extends AppCompatActivity {
                 ViewListeners.this.connectionString = editable.toString();
                 Log.i(TAG, "CHANGED TEXT IN BOX " + editable);
             }
+        });
+
+        this.pauseButton.setOnClickListener(new View.OnClickListener() {
+           public void onClick(View v) {
+               Log.i(TAG, "Clicked on PAUSE");
+               DroneDataProcessing.getInstance().pause();
+           }
         });
     }
 }
