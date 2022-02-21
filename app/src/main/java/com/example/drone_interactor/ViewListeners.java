@@ -10,6 +10,8 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
+
 public class ViewListeners extends AppCompatActivity {
 
     private static final String TAG = ViewListeners.class.getName();
@@ -30,6 +32,8 @@ public class ViewListeners extends AppCompatActivity {
         this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on START, " + ViewListeners.this.connectionString);
+                ConnectionToServer.getInstance().setConnectionString(ViewListeners.this.ipAndPort.toString());
+
                 DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
                 droneDataProcessing.startAll();
             }

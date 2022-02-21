@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -186,22 +187,46 @@ public class DroneDataProcessing {
         MainActivity.getInstance().setText(this.textViews.upwardDistance,
                 "Upward: " + Double.valueOf(round(upwardDistance / 10)) / 100 + " m");
         double angle = this.currentAngle;
-        this.dataPoints = new ArrayList<DataPoint>();
+        // this.dataPoints = new ArrayList<DataPoint>();
 
+        // horizontal data
         for (int i = 0; i < horizontalDistances.length; i++) {
             if (horizontalDistances[i] < 60000 && horizontalDistances[i] > 0) {
-                double xPlace = this.currentPosition.getX() + Double.valueOf(horizontalDistances[i]) / 1000 * Math.cos(Math.toRadians(angle + i * angleDifference));
-                double yPlace = this.currentPosition.getY() + Double.valueOf(horizontalDistances[i]) / 1000 * Math.sin(Math.toRadians(angle + i * angleDifference));
+                double xPlace = this.currentPosition.getX() +
+                        Double.valueOf(horizontalDistances[i]) / 1000 *
+                        Math.cos(Math.toRadians(angle + i * angleDifference));
+                double yPlace = this.currentPosition.getY() +
+                        Double.valueOf(horizontalDistances[i]) / 1000 *
+                        Math.sin(Math.toRadians(angle + i * angleDifference));
                 this.dataPoints.add(new DataPoint(xPlace, yPlace, this.currentPosition.getZ()));
             }
         }
+        // upward data
         if (upwardDistance < 60000 && upwardDistance > 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
         }
+        // downward data
         if (this.height != 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
         }
-        MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + this.dataPoints.size() + " : " + Arrays.toString(this.dataPoints.toArray()));
+        //MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + this.dataPoints.size() + " : " + Arrays.toString(this.dataPoints.toArray()));
+        // send data points
+        this.sendData();
+    }
+
+    private void sendData() {
+        if (this.dataPoints.size() >= 10000) {
+            int numberSent = 0;
+            DataPoint[] dataToSend = (DataPoint[]) this.dataPoints.toArray();
+            this.dataPoints = new ArrayList<DataPoint>();
+            try {
+                numberSent = ConnectionToServer.getInstance().sendMessage(dataToSend);
+                MainActivity.getInstance().setText(this.textViews.debugText, "Sent " + numberSent + " data points. ");
+
+            } catch (IOException e) {
+                MainActivity.getInstance().setText(this.textViews.debugText, "ERROR: " + e.getMessage());
+            }
+        }
     }
 
 
