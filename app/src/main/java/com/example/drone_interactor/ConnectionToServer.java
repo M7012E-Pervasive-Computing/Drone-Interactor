@@ -1,24 +1,32 @@
 package com.example.drone_interactor;
 
+import com.android.volley.RequestQueue;
+import com.google.gson.JsonArray;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class ConnectionToServer {
     private static ConnectionToServer instance;
-
     public String ip;
     public String port;
     public String path = "/";
+    public String name;
 
     private URL url;
     private HttpURLConnection connection;
+
+    private int numberOfPackages = 0;
 
     public static ConnectionToServer getInstance() {
         if (instance == null) {
@@ -29,57 +37,89 @@ public class ConnectionToServer {
 
     private ConnectionToServer() {  }
 
-    public void setConnectionString(String ipAndPort) {
-        String[] connectionArr = ipAndPort.split(":");
-        if (connectionArr.length >= 2) {
-            this.ip = connectionArr[0];
-            this.port = connectionArr[1];
-
-            String[] portAndPath = connectionArr[1].split("/");
-            if (portAndPath.length > 1) {
-                this.port = portAndPath[0];
-                this.path = portAndPath[1];
-            }
-        } else {
-            this.ip = "localhost";
-            this.port = "3000";
-        }
+    public void setConnectionString(String name) {
+        this.name = name;
+        this.ip = "http://130.240.202.87";
+        this.port = "3000";
+        this.path = "/";
+//        String[] connectionArr = ipAndPort.split(":");
+//        if (connectionArr.length >= 2) {
+//            this.ip = connectionArr[0];
+//            this.port = connectionArr[1];
+//
+//            String[] portAndPath = connectionArr[1].split("/");
+//            if (portAndPath.length > 1) {
+//                this.port = portAndPath[0];
+//                this.path = portAndPath[1];
+//            }
+//        } else {
+//            this.ip = "130.240.202.87";
+//            this.port = "3000";
+//            this.path = "/";
+//            this.name = ipAndPort;
+//        }
     }
+
+//    private void test() {
+//        RequestQueue queue = Volley.newRequestQueue(this);
+//        String url ="https://www.google.com";
+//
+//// Request a string response from the provided URL.
+//        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+//                new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String response) {
+//                        // Display the first 500 characters of the response string.
+//                        textView.setText("Response is: "+ response.substring(0,500));
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                textView.setText("That didn't work!");
+//            }
+//        });
+
+// // Add the request to the RequestQueue.
+//        queue.add(stringRequest);
+//    }
 
     private void setConnection() throws IOException {
-        this.url = new URL(this.ip + ":" + this.port + "/" + this.path);
-        if (this.url != null) {
-            this.connection = (HttpURLConnection)url.openConnection();
-            this.connection.setRequestMethod("POST");
-            this.connection.setRequestProperty("Content-Type", "application/json; utf-8");
-            this.connection.setRequestProperty("Accept", "application/json");
-            this.connection.setDoOutput(true);
-        } else {
-            throw new IOException("Could not establish a connection to url");
-        }
+        this.url = new URL(this.ip + ":" + this.port + this.path);
+        this.connection = (HttpURLConnection)url.openConnection();
+        this.connection.setRequestMethod("POST");
+        this.connection.setRequestProperty("Accept", "application/json");
+        this.connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
+        this.connection.setUseCaches(false);
+        this.connection.setDoOutput(true);
     }
 
-    public int sendMessage(DataPoint[] dataPoints) throws IOException {
+    public int sendMessage(DataPoint[] dataPoints) throws IOException, JSONException {
         this.setConnection();
 
+        String objectString = "";
         String arrayString = "[";
+
         for (int i = 0; i < dataPoints.length; i++) {
-            if (i != 0) {
-                arrayString += ", [";
+            String stringOfPoints = "{\"x\":" + dataPoints[i].getX() +
+                    ",\"y\":" + dataPoints[i].getY() +
+                    ",\"z\":" + dataPoints[i].getZ() + "}";
+            if (i == 0) {
+                arrayString += stringOfPoints;
             } else {
-                arrayString += "[";
+                arrayString += ", " + stringOfPoints;
             }
-            arrayString += dataPoints[i].getX() +
-                ", " + dataPoints[i].getY() +
-                ", " + dataPoints[i].getZ() + "]";
         }
         arrayString += "]";
-        String jsonInputString = "{\"data\": " + arrayString + "}";
+        objectString = "{\"data\": " + arrayString + ", \"name\": \""+ this.name + "\"}";
 
         // data sender
-        OutputStream os = this.connection.getOutputStream();
-        byte[] input = jsonInputString.getBytes("utf-8");
-        os.write(input, 0, input.length);
+        byte[] input = objectString.getBytes(StandardCharsets.UTF_8);
+        this.connection.setRequestProperty("Content-Length", Integer.toString( input.length ));
+        this.connection.connect();
+
+        try (DataOutputStream wr = new DataOutputStream(this.connection.getOutputStream())) {
+            wr.write(input);
+        }
 
         // data receiver
         BufferedReader br = new BufferedReader(
@@ -92,6 +132,9 @@ public class ConnectionToServer {
         // disconnects client
         this.connection.disconnect();
         this.connection = null;
-        return dataPoints.length;
+
+        this.numberOfPackages += dataPoints.length;
+        return this.numberOfPackages;
     }
+
 }

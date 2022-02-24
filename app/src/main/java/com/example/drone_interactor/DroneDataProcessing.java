@@ -8,6 +8,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -215,17 +218,38 @@ public class DroneDataProcessing {
     }
 
     private void sendData() {
-        if (this.dataPoints.size() >= 10000) {
-            int numberSent = 0;
-            DataPoint[] dataToSend = (DataPoint[]) this.dataPoints.toArray();
+        if (this.dataPoints.size() >= 100) {
+            DataPoint[] dataToSend = this.dataPoints.toArray(new DataPoint[0]);
             this.dataPoints = new ArrayList<DataPoint>();
-            try {
-                numberSent = ConnectionToServer.getInstance().sendMessage(dataToSend);
-                MainActivity.getInstance().setText(this.textViews.debugText, "Sent " + numberSent + " data points. ");
 
-            } catch (IOException e) {
-                MainActivity.getInstance().setText(this.textViews.debugText, "ERROR: " + e.getMessage());
-            }
+//            try {
+//                JSONObject json = new JSONObject();
+//                String[] dataPoints = new String[dataToSend.length];
+//                for (int i = 0; i < dataToSend.length; i++) {
+//                    dataPoints[i] = "{\"x\":" + dataToSend[i].getX() + ", \"y\":" + dataToSend[i].getY() + ", \"z\":" + dataToSend[i].getZ() + " }";
+//                }
+//                json.put("data", dataPoints);
+//                json.put("name", "test");
+//                MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, json.toString());
+//            } catch (JSONException e) {
+//
+//            }
+
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int numberSent = 0;
+                    try {
+                        numberSent = ConnectionToServer.getInstance().sendMessage(dataToSend);
+                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "Sent " + numberSent + " data points. ");
+                    } catch (IOException e) {
+                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR: " + e);
+                    } catch (Exception e) {
+                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR exception: " + e);
+                    }
+                }
+            });
+            thread.start();
         }
     }
 

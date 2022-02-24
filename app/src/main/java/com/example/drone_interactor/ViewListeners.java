@@ -10,6 +10,12 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 public class ViewListeners extends AppCompatActivity {
@@ -32,7 +38,7 @@ public class ViewListeners extends AppCompatActivity {
         this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on START, " + ViewListeners.this.connectionString);
-                ConnectionToServer.getInstance().setConnectionString(ViewListeners.this.ipAndPort.toString());
+                ConnectionToServer.getInstance().setConnectionString(ViewListeners.this.connectionString);
 
                 DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
                 droneDataProcessing.startAll();
@@ -44,6 +50,35 @@ public class ViewListeners extends AppCompatActivity {
                 Log.i(TAG, "Clicked on STOP");
                 DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
                 droneDataProcessing.stopAll();
+
+
+
+//                DataPoint[] dataPoints = new DataPoint[2];
+//                dataPoints[0] = new DataPoint(10, 11, 12);
+//                dataPoints[1] = new DataPoint(13, 14, 15);
+//                String objectString = "";
+//                String arrayString = "[";
+//
+//                for (int i = 0; i < dataPoints.length; i++) {
+//                    String stringOfPoints = "{\"x\":" + dataPoints[i].getX() +
+//                            ",\"y\":" + dataPoints[i].getY() +
+//                            ",\"z\":" + dataPoints[i].getZ() + "}";
+//                    if (i == 0) {
+//                        arrayString += stringOfPoints;
+//                    } else {
+//                        arrayString += ", " + stringOfPoints;
+//                    }
+//                    // dataPointsString.add("{\"x\":" + dataPoints[i].getX() + ", \"y\":" + dataPoints[i].getY() + ", \"z\":" + dataPoints[i].getZ() + " }");
+//                }
+//                arrayString += "]";
+//                objectString = "{\"data\": " + arrayString + ", \"name\": \"test\"}";
+
+
+//                Log.i(TAG, objectString);
+
+
+
+
             }
         });
 
