@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,8 +28,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.VisionDetectionState;
+import dji.common.util.CommonCallbacks;
 import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
+import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
@@ -87,9 +91,13 @@ public class MainActivity extends AppCompatActivity {
 
         new ViewListeners((Button) findViewById(R.id.startButton),
                 (Button) findViewById(R.id.stopButton),
-                (EditText) findViewById(R.id.ipAndPort),
-                (Button) findViewById(R.id.pauseButton));
-
+                (EditText) findViewById(R.id.nameInput),
+                (Button) findViewById(R.id.pauseButton),
+                (Switch) findViewById(R.id.forwardOption),
+                (Switch) findViewById(R.id.backwardOption),
+                (Switch) findViewById(R.id.upwardOption),
+                (Switch) findViewById(R.id.downwardOption),
+                (Switch) findViewById(R.id.obstacleAvoidanceOption));
     }
 
     /**
@@ -158,8 +166,6 @@ public class MainActivity extends AppCompatActivity {
                             if (djiError == DJISDKError.REGISTRATION_SUCCESS) {
                                 showToast("Register Success");
                                 Log.e(TAG, "WHILE REGISTERING " + String.valueOf(DJISDKManager.getInstance().startConnectionToProduct()));
-                                // DJISDKManager.getInstance().getFlightHubManager()
-                                //((TextView) findViewById(R.id.debugText)).setText(String.valueOf(DJISDKManager.getInstance().startConnectionToProduct()));
                             } else {
                                 showToast("Register sdk fails, please check the bundle id and network connection!");
                             }
@@ -192,38 +198,6 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                             startupClasses();
-
-//                            con.startPositionListener(aircraft);
-//                            con.startSensorListener(aircraft);
-                            // con.test((Aircraft)DJISDKManager.getInstance().getProduct());
-                            // baseProduct.
-//                            new FlightAssistant().setObstacleAvoidanceSensorStateListener(new CommonCallbacks.CompletionCallbackWith<ObstacleAvoidanceSensorState>() {
-//                                @Override
-//                                public void onSuccess(ObstacleAvoidanceSensorState obstacleAvoidanceSensorState) {
-//                                    Log.i(TAG, "SUCCESS");
-//                                    Log.i(TAG, "OBSTACLE " + obstacleAvoidanceSensorState.toString());
-//                                }
-//
-//                                @Override
-//                                public void onFailure(DJIError djiError) {
-//
-//                                }
-//                            });
-//                            new FlightAssistant().setVisionDetectionStateUpdatedCallback(new VisionDetectionState.Callback() {
-//                                @Override
-//                                public void onUpdate(@NonNull VisionDetectionState visionDetectionState) {
-//                                    Log.e(TAG, "METERS: " + visionDetectionState.getObstacleDistanceInMeters());
-//                                    Log.e(TAG, "Test");
-//                                    Log.e(TAG, "Length of sensors " + visionDetectionState.getDetectionSectors());
-//                                }
-//                            });
-
-                            new VisionDetectionState.Callback() {
-                                @Override
-                                public void onUpdate(@NonNull VisionDetectionState visionDetectionState) {
-                                    Log.i(TAG, "vision distance: " + visionDetectionState.getObstacleDistanceInMeters());
-                                }
-                            };
 
                             MainActivity.this.mProduct = baseProduct;
                         }
@@ -290,14 +264,40 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.currentAngle),
                 findViewById(R.id.forwardDistance),
                 findViewById(R.id.backwardDistance),
-                findViewById(R.id.upwardDistance));
-        DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
-        Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
-        droneDataProcessing.setup(textViews, aircraft);
-        showToast("Started all classes with parameters");
+                findViewById(R.id.upwardDistance),
+                findViewById(R.id.forwardOption),
+                findViewById(R.id.backwardOption),
+                findViewById(R.id.upwardOption),
+                findViewById(R.id.downwardOption),
+                findViewById(R.id.obstacleAvoidanceOption));
+
+        try {
+            DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
+            Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+            droneDataProcessing.setup(textViews, aircraft);
+            showToast("Started all classes with parameters");
+        } catch (Exception e) {
+            showToast("Couldn't initialize all classes");
+        }
 
     }
 
+    public void setObsctacleAvoidence(boolean b) {
+        try {
+            ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController()
+                .getFlightAssistant().setCollisionAvoidanceEnabled(b,
+                new CommonCallbacks.CompletionCallback() {
+                    @Override
+                    public void onResult(DJIError djiError) {
+                        showToast("Obstacle avoidance turned " + (b ? "on" : "off"));
+                    }
+                });
+        } catch (Exception e) {
+            showToast("No instance of drone");
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     private void setDisplayContent(BaseProduct baseProduct) {
         if (baseProduct == null) {
             ((TextView) findViewById(R.id.name)).setText("Disconnected");

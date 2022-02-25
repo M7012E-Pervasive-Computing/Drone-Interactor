@@ -1,5 +1,6 @@
 package com.example.drone_interactor;
 
+import android.widget.Switch;
 import android.widget.TextView;
 
 public class TextViews {
@@ -14,6 +15,12 @@ public class TextViews {
     public TextView backwardDistance;
     public TextView upwardDistance;
 
+    public Switch forwardOption;
+    public Switch backwardOption;
+    public Switch upwardOption;
+    public Switch downwardOption;
+    public Switch obstacleAvoidanceOption;
+
     public TextViews(
             TextView debugText,
             TextView motors,
@@ -24,7 +31,12 @@ public class TextViews {
             TextView currentAngle,
             TextView forwardDistance,
             TextView backwardDistance,
-            TextView upwardDistance) {
+            TextView upwardDistance,
+            Switch forwardOption,
+            Switch backwardOption,
+            Switch upwardOptions,
+            Switch downwardOption,
+            Switch obstacleAvoidanceOption) {
         this.debugText = debugText;
         this.motors = motors;
         this.distanceX = distanceX;
@@ -35,5 +47,10 @@ public class TextViews {
         this.forwardDistance = forwardDistance;
         this.backwardDistance = backwardDistance;
         this.upwardDistance = upwardDistance;
+        this.forwardOption = forwardOption;
+        this.backwardOption = backwardOption;
+        this.upwardOption = upwardOptions;
+        this.downwardOption = downwardOption;
+        this.obstacleAvoidanceOption = obstacleAvoidanceOption;
     }
 }

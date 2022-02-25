@@ -25,10 +25,10 @@
         android:layout_height="45dp"
         android:layout_marginStart="274dp"
         android:layout_marginEnd="300dp"
-        android:text="Insert IP and port"
+        android:text="Insert name"
         android:textColor="#FFFFFF"
         android:textSize="34sp"
-        app:layout_constraintBottom_toTopOf="@+id/ipAndPort"
+        app:layout_constraintBottom_toTopOf="@+id/nameInput"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/distanceY" />
 
@@ -59,18 +59,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/ipAndPort"
+        android:id="@+id/nameInput"
         android:layout_width="570dp"
         android:layout_height="90dp"
         android:layout_marginStart="44dp"
         android:layout_marginEnd="300dp"
         android:layout_marginBottom="364dp"
         android:ems="10"
-        android:hint="ip:port"
+        android:hint="name of session"
         android:inputType="text"
         android:textSize="32sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/downwardDistance" />
 
     <androidx.constraintlayout.widget.Group
@@ -83,7 +84,7 @@
         android:id="@+id/group2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="textView,ipAndPort" />
+        app:constraint_referenced_ids="textView,nameInput" />
 
     <TextView
         android:id="@+id/debugText"
@@ -96,7 +97,7 @@
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/forwardDistance"
-        app:layout_constraintTop_toBottomOf="@+id/ipAndPort" />
+        app:layout_constraintTop_toBottomOf="@+id/nameInput" />
 
     <TextView
         android:id="@+id/name"
@@ -196,5 +197,72 @@
         android:textSize="32sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/backwardDistance" />
+
+    <Switch
+        android:id="@+id/forwardOption"
+        android:layout_width="175dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="100dp"
+        android:text="Forward"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stopButton"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <Switch
+        android:id="@+id/backwardOption"
+        android:layout_width="175dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="100dp"
+        android:text="Backward"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forwardOption"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <Switch
+        android:id="@+id/upwardOption"
+        android:layout_width="175dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="100dp"
+        android:text="Upward"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/backwardOption"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <Switch
+        android:id="@+id/obstacleAvoidanceOption"
+        android:layout_width="175dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="100dp"
+        android:text="Avoidance"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/downwardOption"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <Switch
+        android:id="@+id/downwardOption"
+        android:layout_width="175dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="100dp"
+        android:text="Downward"
+        android:textOff="OFF"
+        android:textOn="ON"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/upwardOption"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

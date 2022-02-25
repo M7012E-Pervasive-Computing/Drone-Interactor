@@ -40,6 +40,11 @@ public class DroneDataProcessing {
     private static DroneDataProcessing INSTANCE = null;
     private Aircraft aircraft = null;
 
+    private boolean forwardOption;
+    private boolean backwardOption;
+    private boolean upwardOption;
+    private boolean downwardOption;
+
     public static DroneDataProcessing getInstance() {
         if (DroneDataProcessing.INSTANCE == null) {
             DroneDataProcessing.INSTANCE = new DroneDataProcessing();
@@ -54,6 +59,22 @@ public class DroneDataProcessing {
         this.aircraft = aircraft;
     }
     private DroneDataProcessing() {
+    }
+
+    public void setIfForward(boolean b) {
+        this.forwardOption = b;
+    }
+
+    public void setIfBackward(boolean b) {
+        this.backwardOption = b;
+    }
+
+    public void setIfUpward(boolean b) {
+        this.upwardOption = b;
+    }
+
+    public void setIfDownward(boolean b) {
+        this.downwardOption = b;
     }
 
     private void startPositionListener() {
@@ -125,11 +146,19 @@ public class DroneDataProcessing {
     }
 
     public void stopAll() {
-        this.stopSensorListener();
-        this.stopPositionListener();
+        try {
+            if (this.dataPoints.size() > 0) {
+                this.sendData();
+            }
+            this.stopSensorListener();
+            this.stopPositionListener();
+        } catch (Exception e) {
+            // do nothing, not connected to drone
+        }
         this.dataPoints = new ArrayList<DataPoint>();
         this.currentPosition = new DataPoint(0, 0, 0);
         this.height = 0;
+        ConnectionToServer.getInstance().reset();
         // disconnect
     }
 
@@ -141,7 +170,14 @@ public class DroneDataProcessing {
 
     public void pause() {
         // stop sending data
-        this.stopSensorListener();
+        try {
+            if (this.dataPoints.size() > 0) {
+                this.sendData();
+            }
+            this.stopSensorListener();
+        } catch (Exception e) {
+            // do nothing, no connection to drone
+        }
     }
 
     private void setNewCurrentPosition(double xVelocity,
@@ -195,6 +231,9 @@ public class DroneDataProcessing {
         // horizontal data
         for (int i = 0; i < horizontalDistances.length; i++) {
             if (horizontalDistances[i] < 60000 && horizontalDistances[i] > 0) {
+                if ((!this.forwardOption && (i < 22 || i > 67) ) || (!this.backwardOption && (i > 22 && i < 67))) {
+                    continue;
+                }
                 double xPlace = this.currentPosition.getX() +
                         Double.valueOf(horizontalDistances[i]) / 1000 *
                         Math.cos(Math.toRadians(angle + i * angleDifference));
@@ -205,52 +244,39 @@ public class DroneDataProcessing {
             }
         }
         // upward data
-        if (upwardDistance < 60000 && upwardDistance > 0) {
+        if (this.upwardOption && upwardDistance < 60000 && upwardDistance > 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
         }
         // downward data
-        if (this.height != 0) {
+        if (this.downwardOption && this.height != 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
         }
         //MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + this.dataPoints.size() + " : " + Arrays.toString(this.dataPoints.toArray()));
         // send data points
-        this.sendData();
+        if (this.dataPoints.size() >= 100) {
+            this.sendData();
+        }
     }
 
     private void sendData() {
-        if (this.dataPoints.size() >= 100) {
-            DataPoint[] dataToSend = this.dataPoints.toArray(new DataPoint[0]);
-            this.dataPoints = new ArrayList<DataPoint>();
+        DataPoint[] dataToSend = this.dataPoints.toArray(new DataPoint[0]);
+        this.dataPoints = new ArrayList<DataPoint>();
 
-//            try {
-//                JSONObject json = new JSONObject();
-//                String[] dataPoints = new String[dataToSend.length];
-//                for (int i = 0; i < dataToSend.length; i++) {
-//                    dataPoints[i] = "{\"x\":" + dataToSend[i].getX() + ", \"y\":" + dataToSend[i].getY() + ", \"z\":" + dataToSend[i].getZ() + " }";
-//                }
-//                json.put("data", dataPoints);
-//                json.put("name", "test");
-//                MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, json.toString());
-//            } catch (JSONException e) {
-//
-//            }
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    int numberSent = 0;
-                    try {
-                        numberSent = ConnectionToServer.getInstance().sendMessage(dataToSend);
-                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "Sent " + numberSent + " data points. ");
-                    } catch (IOException e) {
-                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR: " + e);
-                    } catch (Exception e) {
-                        MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR exception: " + e);
-                    }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int numberSent = 0;
+                try {
+                    numberSent = ConnectionToServer.getInstance().sendMessage(dataToSend);
+                    MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "Sent " + numberSent + " data points. ");
+                } catch (IOException e) {
+                    MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR: " + e);
+                } catch (Exception e) {
+                    MainActivity.getInstance().setText(DroneDataProcessing.this.textViews.debugText, "ERROR exception: " + e);
                 }
-            });
-            thread.start();
-        }
+            }
+        });
+        thread.start();
     }
 
 

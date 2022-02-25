@@ -1,22 +1,15 @@
 package com.example.drone_interactor;
 
-import android.R;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 public class ViewListeners extends AppCompatActivity {
 
@@ -26,14 +19,26 @@ public class ViewListeners extends AppCompatActivity {
     private final Button stopButton;
     private final EditText ipAndPort;
     private final Button pauseButton;
+    private final Switch forwardOption;
+    private final Switch backwardOption;
+    private final Switch upwardOption;
+    private final Switch downwardOption;
+    private final Switch obstacleAvoidanceOption;
 
     protected String connectionString = "";
 
-    public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton) {
+    public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
+                         Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
+                         Switch obstacleAvoidanceOption) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
         this.pauseButton = pauseButton;
+        this.forwardOption = forwardOption;
+        this.backwardOption = backwardOption;
+        this.upwardOption = upwardOption;
+        this.downwardOption = downwardOption;
+        this.obstacleAvoidanceOption = obstacleAvoidanceOption;
 
         this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -50,35 +55,6 @@ public class ViewListeners extends AppCompatActivity {
                 Log.i(TAG, "Clicked on STOP");
                 DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
                 droneDataProcessing.stopAll();
-
-
-
-//                DataPoint[] dataPoints = new DataPoint[2];
-//                dataPoints[0] = new DataPoint(10, 11, 12);
-//                dataPoints[1] = new DataPoint(13, 14, 15);
-//                String objectString = "";
-//                String arrayString = "[";
-//
-//                for (int i = 0; i < dataPoints.length; i++) {
-//                    String stringOfPoints = "{\"x\":" + dataPoints[i].getX() +
-//                            ",\"y\":" + dataPoints[i].getY() +
-//                            ",\"z\":" + dataPoints[i].getZ() + "}";
-//                    if (i == 0) {
-//                        arrayString += stringOfPoints;
-//                    } else {
-//                        arrayString += ", " + stringOfPoints;
-//                    }
-//                    // dataPointsString.add("{\"x\":" + dataPoints[i].getX() + ", \"y\":" + dataPoints[i].getY() + ", \"z\":" + dataPoints[i].getZ() + " }");
-//                }
-//                arrayString += "]";
-//                objectString = "{\"data\": " + arrayString + ", \"name\": \"test\"}";
-
-
-//                Log.i(TAG, objectString);
-
-
-
-
             }
         });
 
@@ -105,6 +81,50 @@ public class ViewListeners extends AppCompatActivity {
                Log.i(TAG, "Clicked on PAUSE");
                DroneDataProcessing.getInstance().pause();
            }
+        });
+
+        this.forwardOption.setChecked(true);
+        DroneDataProcessing.getInstance().setIfForward(true);
+        this.forwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DroneDataProcessing.getInstance().setIfForward(isChecked);
+            }
+        });
+
+        this.backwardOption.setChecked(true);
+        DroneDataProcessing.getInstance().setIfBackward(true);
+        this.backwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DroneDataProcessing.getInstance().setIfBackward(isChecked);
+            }
+        });
+
+        this.upwardOption.setChecked(true);
+        DroneDataProcessing.getInstance().setIfUpward(true);
+        this.upwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DroneDataProcessing.getInstance().setIfUpward(isChecked);
+            }
+        });
+
+        this.downwardOption.setChecked(true);
+        DroneDataProcessing.getInstance().setIfDownward(true);
+        this.downwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                DroneDataProcessing.getInstance().setIfDownward(isChecked);
+            }
+        });
+
+        this.obstacleAvoidanceOption.setChecked(true);
+        this.obstacleAvoidanceOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                MainActivity.getInstance().setObsctacleAvoidence(isChecked);
+            }
         });
     }
 }

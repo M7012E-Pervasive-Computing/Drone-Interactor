@@ -137,4 +137,8 @@ public class ConnectionToServer {
         return this.numberOfPackages;
     }
 
+    public void reset() {
+        this.numberOfPackages = 0;
+    }
+
 }
