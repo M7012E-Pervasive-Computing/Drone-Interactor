@@ -240,7 +240,7 @@ public class DroneDataProcessing {
                 double yPlace = this.currentPosition.getY() +
                         Double.valueOf(horizontalDistances[i]) / 1000 *
                         Math.sin(Math.toRadians(angle + i * angleDifference));
-                this.dataPoints.add(new DataPoint(xPlace, yPlace, this.currentPosition.getZ()));
+                this.dataPoints.add(new DataPoint(xPlace, yPlace, -this.currentPosition.getZ()));
             }
         }
         // upward data
