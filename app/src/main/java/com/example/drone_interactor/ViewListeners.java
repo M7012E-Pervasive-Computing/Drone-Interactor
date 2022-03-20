@@ -11,6 +11,9 @@ import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * A class which contains all the UI listeners which is necessary for the app.
+ */
 public class ViewListeners extends AppCompatActivity {
 
     private static final String TAG = ViewListeners.class.getName();
@@ -27,6 +30,18 @@ public class ViewListeners extends AppCompatActivity {
 
     protected String connectionString = "";
 
+    /**
+     * Constructor for a ViewListeners object, setting all the objects to the given parameters.
+     * @param startButton start button
+     * @param stopButton stop button
+     * @param ipAndPort ip and port edit text
+     * @param pauseButton pause button
+     * @param forwardOption forward option switch
+     * @param backwardOption backward option switch
+     * @param upwardOption upward option switch
+     * @param downwardOption downward option switch
+     * @param obstacleAvoidanceOption obstacle avoidance option switch
+     */
     public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
                          Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
                          Switch obstacleAvoidanceOption) {
@@ -40,6 +55,8 @@ public class ViewListeners extends AppCompatActivity {
         this.downwardOption = downwardOption;
         this.obstacleAvoidanceOption = obstacleAvoidanceOption;
 
+        // start the listener for the button start. When the button is pressed, the listener will
+        // start the DroneDataProcessing, and adds a connectionString to the ConnectionToServer
         this.startButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on START, " + ViewListeners.this.connectionString);
@@ -50,6 +67,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the button stop. When the button is pressed, the listener will
+        // stop the DroneDataProcessing
         this.stopButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Log.i(TAG, "Clicked on STOP");
@@ -58,6 +77,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // starts the listener for the edit text ip and port. When the text is changed, the listener
+        // will set the connectionString to the new value
         this.ipAndPort.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -76,6 +97,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the button pause. When the button is pressed, the listener will
+        // pause the DroneDataProcessing
         this.pauseButton.setOnClickListener(new View.OnClickListener() {
            public void onClick(View v) {
                Log.i(TAG, "Clicked on PAUSE");
@@ -83,6 +106,8 @@ public class ViewListeners extends AppCompatActivity {
            }
         });
 
+        // start the listener for the forward option switch. When the switch is changed, the listener
+        // will set the forward option to the new value in DroneDataProcessing
         this.forwardOption.setChecked(true);
         DroneDataProcessing.getInstance().setIfForward(true);
         this.forwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -92,6 +117,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the backward option switch. When the switch is changed, the listener
+        // will set the backward option to the new value in DroneDataProcessing
         this.backwardOption.setChecked(true);
         DroneDataProcessing.getInstance().setIfBackward(true);
         this.backwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -101,6 +128,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the upward option switch. When the switch is changed, the listener
+        // will set the upward option to the new value in DroneDataProcessing
         this.upwardOption.setChecked(true);
         DroneDataProcessing.getInstance().setIfUpward(true);
         this.upwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -110,6 +139,8 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the downward option switch. When the switch is changed, the listener
+        // will set the downward option to the new value in DroneDataProcessing
         this.downwardOption.setChecked(true);
         DroneDataProcessing.getInstance().setIfDownward(true);
         this.downwardOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -119,11 +150,13 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
+        // start the listener for the obstacle avoidance option switch. When the switch is changed, the listener
+        // will set the obstacle avoidance option to the new value in MainActivity
         this.obstacleAvoidanceOption.setChecked(true);
         this.obstacleAvoidanceOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                MainActivity.getInstance().setObsctacleAvoidence(isChecked);
+                MainActivity.getInstance().setObstacleAvoidance(isChecked);
             }
         });
     }

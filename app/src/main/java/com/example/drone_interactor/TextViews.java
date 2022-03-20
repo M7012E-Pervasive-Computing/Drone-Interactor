@@ -21,6 +21,24 @@ public class TextViews {
     public Switch downwardOption;
     public Switch obstacleAvoidanceOption;
 
+    /**
+     * Constructor for a TextViews object, setting all the objects to the given parameters.
+     * @param debugText debug text
+     * @param motors motors text
+     * @param distanceX distance x text
+     * @param distanceY distance y text
+     * @param distanceZ distance z text
+     * @param downwardDistance downward distance text
+     * @param currentAngle current angle text
+     * @param forwardDistance forward distance text
+     * @param backwardDistance backward distance text
+     * @param upwardDistance upward distance text
+     * @param forwardOption forward option switch for sensors
+     * @param backwardOption backward option switch for sensors
+     * @param upwardOptions upward option switch for sensors
+     * @param downwardOption downward option switch for sensors
+     * @param obstacleAvoidanceOption obstacle avoidance option switch
+     */
     public TextViews(
             TextView debugText,
             TextView motors,

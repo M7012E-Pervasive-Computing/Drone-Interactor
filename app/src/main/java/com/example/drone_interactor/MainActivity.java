@@ -37,10 +37,10 @@ import dji.sdk.sdkmanager.DJISDKInitEvent;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.thirdparty.afinal.core.AsyncTask;
 
+/**
+ * The main activity of the app, starts everything else and handles the UI.
+ */
 public class MainActivity extends AppCompatActivity {
-
-
-    Button startButton;
 
     private static final String TAG = MainActivity.class.getName();
     public static final String FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change";
@@ -48,10 +48,19 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler;
     private static MainActivity instance = null;
 
+    /**
+     * During startup the class will store it's own instance. This method will always be
+     * called first during startup of app.
+     */
     public MainActivity() {
         MainActivity.instance = this;
     }
 
+    /**
+     * Returns the instance of this class
+     * This is done because we can only change objects on screen from the 
+     * main class with it's main thread.
+     */
     public static MainActivity getInstance() {
         return MainActivity.instance;
     }
@@ -75,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
 
+    /**
+     * starts of the application with overriding the AppCompatActivity onCreate method 
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,6 +159,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Start the registration of the application with DJI with the APP_KEY stored in the Manifest
+     * Code given by DJI mobile SDK
+     */
     private void startSDKRegistration() {
         if (isRegistrationInProgress.compareAndSet(false, true)) {
             AsyncTask.execute(new Runnable() {
@@ -197,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this.setDisplayContent(baseProduct);
                                 }
                             });
+                            // call our own startup class
                             startupClasses();
 
                             MainActivity.this.mProduct = baseProduct;
@@ -229,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                             }
-                            //((TextView) findViewById(R.id.debugText)).setText("COMP CHANGE");
                             Log.d(TAG,
                                     String.format("onComponentChange key:%s, oldComponent:%s, newComponent:%s",
                                             componentKey,
@@ -253,6 +269,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /** 
+     * Creates a TextViews instance and start every other classes which are required
+     * for the application to work. The textViews are used to control the objects 
+     * on the screen to show information to specific objects.
+     */
     private void startupClasses() {
         TextViews textViews = new TextViews(
                 findViewById(R.id.debugText),
@@ -272,8 +293,11 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.obstacleAvoidanceOption));
 
         try {
+            // initialize the class droneDataProcessing
             DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
+            // fetch the Aircraft instance from the DJISDKManager
             Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+            // start the class droneControl with correct parameters
             droneDataProcessing.setup(textViews, aircraft);
             showToast("Started all classes with parameters");
         } catch (Exception e) {
@@ -282,7 +306,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setObsctacleAvoidence(boolean b) {
+    /**
+     * Sets the obstacle avoidance to either on or off, controlled by the class ViewListeners
+     * and is activated during on a button click
+     * @param boolean a boolean value for whether the obstacle avoidance should be on or off
+     */
+    public void setObstacleAvoidance(boolean b) {
         try {
             ((Aircraft)DJISDKManager.getInstance().getProduct()).getFlightController()
                 .getFlightAssistant().setCollisionAvoidanceEnabled(b,
@@ -297,6 +326,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets the text connected to or disconnected to the drone
+     */
     @SuppressLint("SetTextI18n")
     private void setDisplayContent(BaseProduct baseProduct) {
         if (baseProduct == null) {
@@ -320,6 +352,9 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /** 
+     * Shows a toast message
+     */
     private void showToast(final String toastMsg) {
 
         Handler handler = new Handler(Looper.getMainLooper());
@@ -331,6 +366,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets a text message to a textView object
+     * @param textView the textView object which should be set
+     * @param text the text which should be set
+     */
     public void setText(TextView textView, String text) {
         runOnUiThread(new Runnable() {
             @Override
