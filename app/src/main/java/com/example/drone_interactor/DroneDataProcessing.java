@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
-// import dji.common.flightcontroller.flightassistant.ObstacleActionMode;
 import dji.common.flightcontroller.flightassistant.FaceAwareState;
 import dji.common.flightcontroller.flightassistant.PerceptionInformation;
 import dji.common.util.CommonCallbacks;
@@ -72,7 +71,7 @@ public class DroneDataProcessing {
      * 
      * Initializes data processing.
      * 
-     * @param textViews The text field in the app.
+     * @param textViews The text fields in the app.
      * @param aircraft The aircraft that we are connected to.
      */
     public void setup(TextViews textViews, Aircraft aircraft) {
@@ -81,8 +80,11 @@ public class DroneDataProcessing {
         this.dataPoints = new ArrayList<DataPoint>();
         this.aircraft = aircraft;
     }
-    private DroneDataProcessing() {
-    }
+
+    /**
+     * private constructor to prevent initialization.
+     */
+    private DroneDataProcessing() {}
 
     /**
      * 
@@ -129,9 +131,10 @@ public class DroneDataProcessing {
     }
 
     /**
-     * Starts the updating of the position of the rone via a callback function on the 
+     * Starts the updating of the position of the drone via a callback function on the 
      * aircraft's flight controller. This callback function will be run
-     * every time that the drone updates its velocity, 10 times a second.
+     * every time that the drone updates its velocity.
+     * Standard value is 10 times a second.
      */
     private void startPositionListener() {
         if (this.aircraft == null) {
@@ -172,7 +175,8 @@ public class DroneDataProcessing {
     /**
      * Starts reading sensor data via a callback function on the 
      * aircraft's flight assistant. This callback function will be run
-     * every time that the drone updates its sensor data, every .4 seconds.
+     * every time that the drone updates its sensor data.
+     * Standard value is every 0.4 seconds.
      */
     private void startSensorListener() {
         if (this.aircraft == null) {
@@ -231,8 +235,8 @@ public class DroneDataProcessing {
         this.dataPoints = new ArrayList<DataPoint>();
         this.currentPosition = new DataPoint(0, 0, 0);
         this.height = 0;
-        ConnectionToServer.getInstance().reset();
         // disconnect
+        ConnectionToServer.getInstance().reset();
     }
 
     /**
@@ -293,7 +297,7 @@ public class DroneDataProcessing {
 
     /**
      * 
-     * Sets the yaw (rotation in a certain axis) and the height of the drone. 
+     * Sets the yaw (rotation around the y-axis) and the height of the drone. 
      * 
      * @param yaw The yaw of the drone, in degrees.
      * @param height The height of the drone, in meters.
@@ -314,7 +318,7 @@ public class DroneDataProcessing {
 
     /**
      *
-     * Takes data from the drone's sensors and creates an absolut xyz coordinate from that
+     * Takes data from the drone's sensors and creates an absolute xyz coordinate from that
      * data and the drone's position.
      * 
      * @param forwardDistance The sensed distance from the forward sensor, in meters.
@@ -337,7 +341,7 @@ public class DroneDataProcessing {
                 /** 
                  * The horizontalDistances array stores sensed points from the sensor in a cone, with a 
                  * 4 degree difference between each element. With the if clause below we can specify that
-                 * we want the points in a 90 degree cone in front of the drone.
+                 * we want the points in a 90 degree cone in front or to the back of the drone.
                  */
                 if ((!this.forwardOption && (i < 22 || i > 67) ) || (!this.backwardOption && (i > 22 && i < 67))) {
                     continue;

@@ -49,7 +49,10 @@ public class ConnectionToServer {
         }
         return instance;
     }
-
+    
+    /**
+     * private constructor to prevent initialization.
+     */
     private ConnectionToServer() {  }
 
     /**
