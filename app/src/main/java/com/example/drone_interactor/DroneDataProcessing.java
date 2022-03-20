@@ -25,6 +25,15 @@ import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 
 @SuppressLint("SetTextI18n")
+
+/**
+ * 
+ * A singleton class which fetches and handles data from the drone.
+ * Updates the position of the drone, and reads sensor data.
+ * 
+ * It is a singleton class as there should only be one instance of
+ * the class which handles data.
+ */
 public class DroneDataProcessing {
 
     public ArrayList<DataPoint> dataPoints;
@@ -45,6 +54,13 @@ public class DroneDataProcessing {
     private boolean upwardOption;
     private boolean downwardOption;
 
+    /**
+     * 
+     * Returns the instance of the class. Creates a new one
+     * if no instance exists.
+     * 
+     * @return The instance of the ConnectionToServer class.
+     */
     public static DroneDataProcessing getInstance() {
         if (DroneDataProcessing.INSTANCE == null) {
             DroneDataProcessing.INSTANCE = new DroneDataProcessing();
@@ -52,6 +68,13 @@ public class DroneDataProcessing {
         return DroneDataProcessing.INSTANCE;
     }
 
+    /**
+     * 
+     * Initializes data processing.
+     * 
+     * @param textViews The text field in the app.
+     * @param aircraft The aircraft that we are connected to.
+     */
     public void setup(TextViews textViews, Aircraft aircraft) {
         this.textViews = textViews;
         this.currentPosition = new DataPoint(0, 0, 0);
@@ -61,22 +84,55 @@ public class DroneDataProcessing {
     private DroneDataProcessing() {
     }
 
+    /**
+     * 
+     * Activates or disables the forward sensor. 
+     * Called via a button on the app.
+     * 
+     * @param b Whether the forward sensor should be on.
+     */
     public void setIfForward(boolean b) {
         this.forwardOption = b;
     }
 
+    /**
+     * 
+     * Activates or disables the backward sensor.
+     * Called via a button on the app.
+     * 
+     * @param b Whether the backward sensor should be on.
+     */
     public void setIfBackward(boolean b) {
         this.backwardOption = b;
     }
 
+    /**
+     * 
+     * Activates or disables the upward sensor.
+     * Called via a button on the app.
+     * 
+     * @param b Whether the upward sensor should be on.
+     */
     public void setIfUpward(boolean b) {
         this.upwardOption = b;
     }
 
+    /**
+     * 
+     * Activates or disables the downward sensor.
+     * Called via a button on the app.
+     * 
+     * @param b Whether the downward sensor should be on.
+     */
     public void setIfDownward(boolean b) {
         this.downwardOption = b;
     }
 
+    /**
+     * Starts the updating of the position of the rone via a callback function on the 
+     * aircraft's flight controller. This callback function will be run
+     * every time that the drone updates its velocity, 10 times a second.
+     */
     private void startPositionListener() {
         if (this.aircraft == null) {
             return;
@@ -103,6 +159,9 @@ public class DroneDataProcessing {
         });
     }
 
+    /**
+     * Stops updating the position of the drone. 
+     */
     private void stopPositionListener() {
         if (this.aircraft == null) {
             return;
@@ -110,6 +169,11 @@ public class DroneDataProcessing {
         this.aircraft.getFlightController().setStateCallback(null);
     }
 
+    /**
+     * Starts reading sensor data via a callback function on the 
+     * aircraft's flight assistant. This callback function will be run
+     * every time that the drone updates its sensor data, every .4 seconds.
+     */
     private void startSensorListener() {
         if (this.aircraft == null) {
             return;
@@ -117,7 +181,7 @@ public class DroneDataProcessing {
         this.aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(new CommonCallbacks.CompletionCallbackWith<PerceptionInformation>() {
             @Override
             public void onSuccess(PerceptionInformation perceptionInformation) {
-                // MainActivity.getInstance().setText(textViews.debugText, Arrays.toString(perceptionInformation.getDistances()));
+                // 60000 is the sensor's default value when not sensing anything.
                 int forwardDistance = 60000;
                 int backwardDistance = 60000;
                 if (perceptionInformation.getDistances().length > 0 &&
@@ -138,6 +202,9 @@ public class DroneDataProcessing {
         });
     }
 
+    /**
+     * Stops reading sensor values.
+     */
     private void stopSensorListener() {
         if (this.aircraft == null) {
             return;
@@ -145,6 +212,12 @@ public class DroneDataProcessing {
         this.aircraft.getFlightController().getFlightAssistant().setVisualPerceptionInformationCallback(null);
     }
 
+    /**
+     * Stops the data processing and resets all variables associated with processing.
+     * Sends the data stored in the cache before doing so.
+     * 
+     * Called via a button on the app.
+     */
     public void stopAll() {
         try {
             if (this.dataPoints.size() > 0) {
@@ -162,12 +235,21 @@ public class DroneDataProcessing {
         // disconnect
     }
 
+    /**
+     * Starts the data processing.
+     * 
+     * Called via a button on the app.
+     */
     public void startAll() {
         this.startPositionListener();
         this.startSensorListener();
         // start sending data
     }
 
+    /**
+     * Pauses creating sensor data, but keeps updating the drone's position.
+     * Called via a button on the app.
+     */
     public void pause() {
         // stop sending data
         try {
@@ -180,6 +262,18 @@ public class DroneDataProcessing {
         }
     }
 
+    /**
+     * 
+     * Sets the current position of the drone, calculates based on time and velocity.
+     * Also prints the new position to the app.
+     * 
+     * s = s_0 + v * t
+     * 
+     * @param xVelocity The velocity in the x-axis, in meters per second.
+     * @param yVelocity The velocity in the y-axis, in meters per second.
+     * @param zVelocity The velocity in the z-axis, in meters per second.
+     * @param dtMillis The time difference, in milliseconds.
+     */
     private void setNewCurrentPosition(double xVelocity,
                                       double yVelocity,
                                       double zVelocity,
@@ -197,6 +291,13 @@ public class DroneDataProcessing {
                 (double)(round(newZ * 100)) / 100);
     }
 
+    /**
+     * 
+     * Sets the yaw (rotation in a certain axis) and the height of the drone. 
+     * 
+     * @param yaw The yaw of the drone, in degrees.
+     * @param height The height of the drone, in meters.
+     */
     private void setCurrentAngleAndHeight(double yaw, double height) {
         this.currentAngle = yaw;
         MainActivity.getInstance().setText(this.textViews.currentAngle,
@@ -213,9 +314,12 @@ public class DroneDataProcessing {
 
     /**
      *
-     * @param forwardDistance in meters
-     * @param backwardDistance in meters
-     * @param upwardDistance in meters
+     * Takes data from the drone's sensors and creates an absolut xyz coordinate from that
+     * data and the drone's position.
+     * 
+     * @param forwardDistance The sensed distance from the forward sensor, in meters.
+     * @param backwardDistance The sensed distance from the backward sensor, in meters.
+     * @param upwardDistance The sensed distance from the upward sensor, in meters.
      */
     private void setNewDataPoint(double forwardDistance, double backwardDistance,
                                 double upwardDistance, int[] horizontalDistances, float angleDifference) {
@@ -226,11 +330,15 @@ public class DroneDataProcessing {
         MainActivity.getInstance().setText(this.textViews.upwardDistance,
                 "Upward: " + Double.valueOf(round(upwardDistance / 10)) / 100 + " m");
         double angle = this.currentAngle;
-        // this.dataPoints = new ArrayList<DataPoint>();
 
         // horizontal data
         for (int i = 0; i < horizontalDistances.length; i++) {
             if (horizontalDistances[i] < 60000 && horizontalDistances[i] > 0) {
+                /** 
+                 * The horizontalDistances array stores sensed points from the sensor in a cone, with a 
+                 * 4 degree difference between each element. With the if clause below we can specify that
+                 * we want the points in a 90 degree cone in front of the drone.
+                 */
                 if ((!this.forwardOption && (i < 22 || i > 67) ) || (!this.backwardOption && (i > 22 && i < 67))) {
                     continue;
                 }
@@ -251,13 +359,18 @@ public class DroneDataProcessing {
         if (this.downwardOption && this.height != 0) {
             this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
         }
-        //MainActivity.getInstance().setText(this.textViews.debugText, "Data points: " + this.dataPoints.size() + " : " + Arrays.toString(this.dataPoints.toArray()));
-        // send data points
+        // sends data points only if there is a 100 or more points in the cache.
         if (this.dataPoints.size() >= 100) {
             this.sendData();
         }
     }
 
+    /**
+     * Sends data via a threaded solution. 
+     * 
+     * This is threaded because android requires HTTP requests be sent on
+     * another thread than the main one. 
+     */
     private void sendData() {
         DataPoint[] dataToSend = this.dataPoints.toArray(new DataPoint[0]);
         this.dataPoints = new ArrayList<DataPoint>();
@@ -278,20 +391,5 @@ public class DroneDataProcessing {
         });
         thread.start();
     }
-
-
-//        double forwardXPlace = this.currentPosition.getX() + forwardDistance / 1000 * Math.cos(Math.toRadians(angle));
-//        double forwardYPlace = this.currentPosition.getY() + forwardDistance / 1000 * Math.sin(Math.toRadians(angle));
-//
-//        double backwardXPlace = this.currentPosition.getX() + backwardDistance / 1000 * Math.cos(Math.toRadians(angle + 180d));
-//        double backwardYPlace = this.currentPosition.getY() + backwardDistance / 1000 * Math.sin(Math.toRadians(angle + 180d));
-//
-//
-//        if (forwardDistance < 60000) {
-//            this.dataPoints.add(new DataPoint(forwardXPlace, forwardYPlace, this.currentPosition.getZ()));
-//        }
-//        if (backwardDistance < 60000) {
-//            this.dataPoints.add(new DataPoint(backwardXPlace, backwardYPlace, this.currentPosition.getZ()));
-//        }
 
 }

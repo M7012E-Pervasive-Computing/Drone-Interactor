@@ -16,6 +16,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+/**
+ * 
+ * A connection singleton class which handles communication with 
+ * an URL via HTTP request.
+ * 
+ * It is a singleton class since there should only be one instance of
+ * the class handling the communication. 
+ */
 public class ConnectionToServer {
     private static ConnectionToServer instance;
     public String ip;
@@ -28,6 +36,13 @@ public class ConnectionToServer {
 
     private int numberOfPackages = 0;
 
+    /**
+     * 
+     * Returns the instance of the class. Creates a new one
+     * if no instance exists.
+     * 
+     * @return The instance of the ConnectionToServer class.
+     */
     public static ConnectionToServer getInstance() {
         if (instance == null) {
             instance = new ConnectionToServer();
@@ -37,52 +52,26 @@ public class ConnectionToServer {
 
     private ConnectionToServer() {  }
 
+    /**
+     * 
+     * Sets up the connection to our back-end, and
+     * saves the session name to a variable. 
+     * 
+     * @param name The name of the session.
+     */
     public void setConnectionString(String name) {
         this.name = name;
         this.ip = "http://130.240.202.87";
         this.port = "3000";
         this.path = "/";
-//        String[] connectionArr = ipAndPort.split(":");
-//        if (connectionArr.length >= 2) {
-//            this.ip = connectionArr[0];
-//            this.port = connectionArr[1];
-//
-//            String[] portAndPath = connectionArr[1].split("/");
-//            if (portAndPath.length > 1) {
-//                this.port = portAndPath[0];
-//                this.path = portAndPath[1];
-//            }
-//        } else {
-//            this.ip = "130.240.202.87";
-//            this.port = "3000";
-//            this.path = "/";
-//            this.name = ipAndPort;
-//        }
     }
 
-//    private void test() {
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//        String url ="https://www.google.com";
-//
-//// Request a string response from the provided URL.
-//        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-//                new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        // Display the first 500 characters of the response string.
-//                        textView.setText("Response is: "+ response.substring(0,500));
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                textView.setText("That didn't work!");
-//            }
-//        });
-
-// // Add the request to the RequestQueue.
-//        queue.add(stringRequest);
-//    }
-
+    /**
+     * 
+     * Sets parameters on the HTTP connection.
+     * 
+     * @throws IOException Throws I/O exception for faulty URL:s, among other things.
+     */
     private void setConnection() throws IOException {
         this.url = new URL(this.ip + ":" + this.port + this.path);
         this.connection = (HttpURLConnection)url.openConnection();
@@ -93,12 +82,23 @@ public class ConnectionToServer {
         this.connection.setDoOutput(true);
     }
 
+    /**
+     * 
+     * Transforms an array of data points to a JSON string,
+     * and sends that string via the HTTP connection.
+     * 
+     * @param dataPoints An array of xyz coordinates.
+     * @return Returns the total number of points sent during this session.
+     * @throws IOException Throws I/O exception for faulty URL:s, among other things.
+     * @throws JSONException Throws a JSON exception for faulty JSON formatting, among other things.
+     */
     public int sendMessage(DataPoint[] dataPoints) throws IOException, JSONException {
         this.setConnection();
 
         String objectString = "";
         String arrayString = "[";
 
+        // The following for loop adds the point data to the JSON string
         for (int i = 0; i < dataPoints.length; i++) {
             String stringOfPoints = "{\"x\":" + dataPoints[i].getX() +
                     ",\"y\":" + dataPoints[i].getY() +
@@ -137,6 +137,10 @@ public class ConnectionToServer {
         return this.numberOfPackages;
     }
 
+    /**
+     * Resets the variable keeping track of the total number of points
+     * sent during a session.
+     */
     public void reset() {
         this.numberOfPackages = 0;
     }

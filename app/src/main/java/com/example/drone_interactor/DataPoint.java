@@ -4,7 +4,7 @@ import static java.lang.Math.round;
 
 /**
  * A data point class which stores data coordinates. There exists methods for getting and setting
- * data coordinates, as well a override method for toString().
+ * data coordinates, as well an override method for toString().
  */
 public class DataPoint {
     private double x;
