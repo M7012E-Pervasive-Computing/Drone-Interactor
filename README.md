@@ -1,1 +1,2 @@
 # Drone-Interactor
+An android app developed using android studio, used to communicate with the drone and to send the data points to a RESTful api. The UI is built to fit a galaxy tab s7+ but can be scaled down to fit other android devices if needed. The file Main is mostly copied from DJI Mobile SDK to get the app to start registering and connecting to the drone. We have changed a bit but most of the code structure in main is from DJI. The structure of code might not be the best for future development, since we are new to developing mobile applications, but it works for now.
