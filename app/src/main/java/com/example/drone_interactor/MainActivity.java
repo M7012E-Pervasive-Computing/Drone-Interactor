@@ -109,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
                 (Switch) findViewById(R.id.backwardOption),
                 (Switch) findViewById(R.id.upwardOption),
                 (Switch) findViewById(R.id.downwardOption),
-                (Switch) findViewById(R.id.obstacleAvoidanceOption));
+                (Switch) findViewById(R.id.obstacleAvoidanceOption),
+                (Button) findViewById(R.id.leftRotate));
     }
 
     /**
@@ -297,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
             DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
             // fetch the Aircraft instance from the DJISDKManager
             Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
+            DroneRotation.getInstance().setAircraft(aircraft, textViews);
             // start the class droneControl with correct parameters
             droneDataProcessing.setup(textViews, aircraft);
             showToast("Started all classes with parameters");
@@ -309,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Sets the obstacle avoidance to either on or off, controlled by the class ViewListeners
      * and is activated during on a button click
-     * @param boolean a boolean value for whether the obstacle avoidance should be on or off
+     * @param b a boolean value for whether the obstacle avoidance should be on or off
      */
     public void setObstacleAvoidance(boolean b) {
         try {

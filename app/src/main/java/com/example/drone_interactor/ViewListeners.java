@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.Switch;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.drone_interactor.DroneRotation;
+
 
 /**
  * A class which contains all the UI listeners which is necessary for the app.
@@ -27,6 +29,7 @@ public class ViewListeners extends AppCompatActivity {
     private final Switch upwardOption;
     private final Switch downwardOption;
     private final Switch obstacleAvoidanceOption;
+    private final Button rotateLeft;
 
     protected String connectionString = "";
 
@@ -44,7 +47,7 @@ public class ViewListeners extends AppCompatActivity {
      */
     public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
                          Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
-                         Switch obstacleAvoidanceOption) {
+                         Switch obstacleAvoidanceOption, Button rotateLeft) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
@@ -54,6 +57,7 @@ public class ViewListeners extends AppCompatActivity {
         this.upwardOption = upwardOption;
         this.downwardOption = downwardOption;
         this.obstacleAvoidanceOption = obstacleAvoidanceOption;
+        this.rotateLeft = rotateLeft;
 
         // start the listener for the button start. When the button is pressed, the listener will
         // start the DroneDataProcessing, and adds a connectionString to the ConnectionToServer
@@ -104,6 +108,14 @@ public class ViewListeners extends AppCompatActivity {
                Log.i(TAG, "Clicked on PAUSE");
                DroneDataProcessing.getInstance().pause();
            }
+        });
+
+        this.rotateLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Clicked on ROTATE LEFT");
+                DroneRotation.getInstance().rotateDrone();
+            }
         });
 
         // start the listener for the forward option switch. When the switch is changed, the listener
@@ -159,5 +171,6 @@ public class ViewListeners extends AppCompatActivity {
                 MainActivity.getInstance().setObstacleAvoidance(isChecked);
             }
         });
+
     }
 }
