@@ -114,7 +114,7 @@ public class ViewListeners extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE LEFT");
-                DroneRotation.getInstance().rotateDrone();
+                DroneRotation.getInstance().rotateDrone(90);
             }
         });
 

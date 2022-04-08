@@ -304,6 +304,7 @@ public class DroneDataProcessing {
      */
     private void setCurrentAngleAndHeight(double yaw, double height) {
         this.currentAngle = yaw;
+
         MainActivity.getInstance().setText(this.textViews.currentAngle,
                 "Current angle: " + (double)(round(yaw * 1000) / 1000));
         this.height = height;
