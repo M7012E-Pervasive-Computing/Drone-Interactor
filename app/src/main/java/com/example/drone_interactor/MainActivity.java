@@ -110,7 +110,8 @@ public class MainActivity extends AppCompatActivity {
                 (Switch) findViewById(R.id.upwardOption),
                 (Switch) findViewById(R.id.downwardOption),
                 (Switch) findViewById(R.id.obstacleAvoidanceOption),
-                (Button) findViewById(R.id.leftRotate));
+                (Button) findViewById(R.id.rotateLeft),
+                (Button) findViewById(R.id.rotateRight));
     }
 
     /**

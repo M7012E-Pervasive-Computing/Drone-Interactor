@@ -30,6 +30,7 @@ public class ViewListeners extends AppCompatActivity {
     private final Switch downwardOption;
     private final Switch obstacleAvoidanceOption;
     private final Button rotateLeft;
+    private final Button rotateRight;
 
     protected String connectionString = "";
 
@@ -47,7 +48,7 @@ public class ViewListeners extends AppCompatActivity {
      */
     public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
                          Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
-                         Switch obstacleAvoidanceOption, Button rotateLeft) {
+                         Switch obstacleAvoidanceOption, Button rotateLeft, Button rotateRight) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
@@ -58,6 +59,7 @@ public class ViewListeners extends AppCompatActivity {
         this.downwardOption = downwardOption;
         this.obstacleAvoidanceOption = obstacleAvoidanceOption;
         this.rotateLeft = rotateLeft;
+        this.rotateRight = rotateRight;
 
         // start the listener for the button start. When the button is pressed, the listener will
         // start the DroneDataProcessing, and adds a connectionString to the ConnectionToServer
@@ -114,6 +116,14 @@ public class ViewListeners extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE LEFT");
+                DroneRotation.getInstance().rotateDrone(-90);
+            }
+        });
+
+        this.rotateRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Clicked on ROTATE RIGHT");
                 DroneRotation.getInstance().rotateDrone(90);
             }
         });

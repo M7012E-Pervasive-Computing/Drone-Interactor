@@ -45,7 +45,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/leftRotate"
+        android:id="@+id/rotateLeft"
         android:layout_width="250dp"
         android:layout_height="91dp"
         android:layout_marginStart="8dp"
@@ -55,6 +55,18 @@
         android:textColor="#4E342E"
         app:layout_constraintStart_toEndOf="@+id/distanceX"
         app:layout_constraintTop_toBottomOf="@+id/startButton" />
+
+    <Button
+        android:id="@+id/rotateRight"
+        android:layout_width="250dp"
+        android:layout_height="91dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="144dp"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:text="Rotate Right"
+        android:textColor="#4E342E"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/stopButton" />
 
     <Button
         android:id="@+id/pauseButton"

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import dji.common.error.DJIError;
 import dji.common.flightcontroller.FlightControllerState;
 import dji.common.flightcontroller.virtualstick.FlightControlData;
+import dji.common.flightcontroller.virtualstick.VerticalControlMode;
 import dji.common.flightcontroller.virtualstick.YawControlMode;
 import dji.common.util.CommonCallbacks;
 import dji.sdk.products.Aircraft;
@@ -25,10 +26,11 @@ public class DroneRotation implements Runnable {
     private Timer sendVirtualStickDataTimer;
     private double currentAngle;
 
-    private final int STANDARD_STEP = 5;
+    private final int STANDARD_STEP = 1;
+    private final int NUM_OF_ITERATIONS_EACH = 3;
 
     private double[] steps;
-    private int delay;
+    private int delay = 40;
 
     public static DroneRotation getInstance() {
         if (DroneRotation.INSTANCE == null) {
@@ -44,7 +46,8 @@ public class DroneRotation implements Runnable {
         this.flightController = this.aircraft.getFlightController();
         this.textViews = textviews;
         this.startYawListener();
-
+        this.flightController.setYawControlMode(YawControlMode.ANGLE);
+        this.flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
     }
 
     @Override
@@ -54,6 +57,8 @@ public class DroneRotation implements Runnable {
                 Thread.sleep(this.delay);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
+                return;
             }
             this.doRotate(this.steps[i]);
         }
@@ -64,6 +69,7 @@ public class DroneRotation implements Runnable {
                 MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
             }
         });
+        this.steps = null;
     }
 
 //    private class SendVirtualStickData extends TimerTask {
@@ -103,15 +109,24 @@ public class DroneRotation implements Runnable {
     }
 
     public void rotateDrone(int rotateAngle, int degreeSegments) {
+        if (this.steps != null) {
+            return;
+        }
+        int multiplier = 1;
+        if (rotateAngle < 0) {
+            multiplier = -1;
+        }
         double yaw = this.currentAngle;
-        double[] steps = new double[rotateAngle / degreeSegments + 1]; // degree segments
+        double[] steps = new double[Math.abs(rotateAngle) / degreeSegments + 1]; // degree segments
         String str = "";
         for (int i = 0; i < steps.length; i++) {
-            steps[i] = this.getAngle(yaw, (i + 1) * degreeSegments);
+            steps[i] = this.getAngle(yaw, (i + 1) * degreeSegments * multiplier);
             str += steps[i] + ", ";
         }
 
         MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, str);
+
+        this.steps = steps;
 
         DroneRotation.this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
             @Override
