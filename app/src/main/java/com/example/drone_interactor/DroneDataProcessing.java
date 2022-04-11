@@ -158,6 +158,7 @@ public class DroneDataProcessing {
                 // set new data
                 DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
                 DroneDataProcessing.this.setCurrentAngleAndHeight(flightControllerState.getAttitude().yaw, flightControllerState.getUltrasonicHeightInMeters());
+                DroneRotation.getInstance().setYaw(flightControllerState.getAttitude().yaw);
             }
         });
     }
@@ -306,7 +307,7 @@ public class DroneDataProcessing {
         this.currentAngle = yaw;
 
         MainActivity.getInstance().setText(this.textViews.currentAngle,
-                "Current angle: " + (double)(round(yaw * 1000) / 1000));
+                "Current angle: " + (double)((double)(round(yaw * 1000)) / 1000));
         this.height = height;
         MainActivity.getInstance().setText(this.textViews.downwardDistance,
                 "Downward: " + Double.valueOf(round(height * 100)) / 100);
