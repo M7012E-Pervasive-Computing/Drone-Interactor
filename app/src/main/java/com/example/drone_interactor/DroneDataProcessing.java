@@ -48,6 +48,7 @@ public class DroneDataProcessing {
     private static DroneDataProcessing INSTANCE = null;
     private Aircraft aircraft = null;
 
+    private boolean isStarted = false;
     private boolean forwardOption;
     private boolean backwardOption;
     private boolean upwardOption;
@@ -79,6 +80,7 @@ public class DroneDataProcessing {
         this.currentPosition = new DataPoint(0, 0, 0);
         this.dataPoints = new ArrayList<DataPoint>();
         this.aircraft = aircraft;
+        this.startPositionListener();
     }
 
     /**
@@ -145,19 +147,22 @@ public class DroneDataProcessing {
 
             @Override
             public void onUpdate(@NonNull FlightControllerState flightControllerState) {
-                if (this.millisecondsBefore != -1) {
-                    // set new distance
-                    long currentTime = currentTimeMillis();
-                    DroneDataProcessing.this.setNewCurrentPosition(
-                            flightControllerState.getVelocityX(),
-                            flightControllerState.getVelocityY(),
-                            flightControllerState.getVelocityZ(),
-                            (currentTime - this.millisecondsBefore));
+                if (DroneDataProcessing.getInstance().isStarted) {
+                    if (this.millisecondsBefore != -1) {
+                        // set new distance
+                        long currentTime = currentTimeMillis();
+                        DroneDataProcessing.this.setNewCurrentPosition(
+                                flightControllerState.getVelocityX(),
+                                flightControllerState.getVelocityY(),
+                                flightControllerState.getVelocityZ(),
+                                (currentTime - this.millisecondsBefore));
+                    }
+
+                    this.millisecondsBefore = currentTimeMillis();
+                    // set new data
+                    DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
+                    DroneDataProcessing.this.setCurrentAngleAndHeight(flightControllerState.getAttitude().yaw, flightControllerState.getUltrasonicHeightInMeters());
                 }
-                this.millisecondsBefore = currentTimeMillis();
-                // set new data
-                DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
-                DroneDataProcessing.this.setCurrentAngleAndHeight(flightControllerState.getAttitude().yaw, flightControllerState.getUltrasonicHeightInMeters());
                 DroneRotation.getInstance().setYaw(flightControllerState.getAttitude().yaw);
             }
         });
@@ -170,7 +175,7 @@ public class DroneDataProcessing {
         if (this.aircraft == null) {
             return;
         }
-        this.aircraft.getFlightController().setStateCallback(null);
+        // this.aircraft.getFlightController().setStateCallback(null);
     }
 
     /**
@@ -236,6 +241,7 @@ public class DroneDataProcessing {
         this.dataPoints = new ArrayList<DataPoint>();
         this.currentPosition = new DataPoint(0, 0, 0);
         this.height = 0;
+        this.isStarted = false;
         // disconnect
         ConnectionToServer.getInstance().reset();
     }
@@ -248,6 +254,7 @@ public class DroneDataProcessing {
     public void startAll() {
         this.startPositionListener();
         this.startSensorListener();
+        this.isStarted = true;
         // start sending data
     }
 

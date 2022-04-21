@@ -25,10 +25,12 @@ public class DroneRotation implements Runnable {
     private static DroneRotation INSTANCE;
     private Timer sendVirtualStickDataTimer;
     private double currentAngle;
+    private int lengthOfSteps;
 
     private final int STANDARD_STEP = 2;
     private final int NUM_OF_ITERATIONS_EACH = 3;
 
+    private boolean slowRotateMode = false;
     private double[] steps;
     private int delay = 100; // between 40 and 200, 100 is best
 
@@ -52,15 +54,58 @@ public class DroneRotation implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < this.steps.length; i++) {
-            try {
-                Thread.sleep(this.delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
-                return;
+
+        if (this.slowRotateMode) {
+            //if (i % length == 0) {
+            //    1000
+            //}
+            for (int i = 0; i < this.steps.length; i++) {
+                // rotate
+                try {
+                    Thread.sleep(this.delay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
+                    return;
+                }
+                this.doRotate(this.steps[i]);
+
+                // check if we should sleep 1000 ms
+                if (i % this.lengthOfSteps == 0) {
+                    DroneRotation.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
+                        }
+                    });
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
+                        return;
+                    }
+                    DroneRotation.this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+                        @Override
+                        public void onResult(DJIError djiError) {
+                            // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
+                        }
+                    });
+                }
             }
-            this.doRotate(this.steps[i]);
+            this.slowRotateMode = false;
+
+        } else {
+            for (int i = 0; i < this.steps.length; i++) {
+                try {
+                    Thread.sleep(this.delay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
+                    return;
+                }
+                this.doRotate(this.steps[i]);
+            }
         }
 
         DroneRotation.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
@@ -69,6 +114,7 @@ public class DroneRotation implements Runnable {
                 // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
             }
         });
+
         this.steps = null;
     }
 
@@ -97,8 +143,8 @@ public class DroneRotation implements Runnable {
 //        }
 //    }
 
-    private double getAngle(double angle, double rotateAngle) {
-         double yawRotateTo = (angle + rotateAngle) % 360;
+    private double getAngle(double currentAngle, double rotateAngle) {
+         double yawRotateTo = (currentAngle + rotateAngle) % 360;
          if (yawRotateTo <= -180) {
             yawRotateTo += 360;
          }
@@ -113,16 +159,8 @@ public class DroneRotation implements Runnable {
     }
 
     public void rotateDrone(int rotateAngle) {
-        rotateDrone(rotateAngle, this.STANDARD_STEP);
-    }
-
-    public void rotateDrone(int rotateAngle, int degreeSegments) {
         if (this.steps != null) {
             return;
-        }
-        int multiplier = 1;
-        if (rotateAngle < 0) {
-            multiplier = -1;
         }
         double yaw = this.currentAngle;
         int length = 10;
@@ -172,5 +210,39 @@ public class DroneRotation implements Runnable {
 
     public void setYaw(double yaw) {
         this.currentAngle = yaw;
+    }
+    
+    public void slowRotate360() {
+        if (this.steps != null) {
+            return;
+        }
+        int degreesChanges = 20;
+        this.lengthOfSteps = 5;
+        this.slowRotateMode = true;
+        this.steps = new double[this.lengthOfSteps * ((360 / degreesChanges))]; // 360 / 30 = 36 / 3
+        double currAngle = this.currentAngle;
+        int index = 0;
+        String str = "";
+        for (int rotateTo = degreesChanges; rotateTo <= 360; rotateTo += degreesChanges) {
+//            currAngle = currAngle + 30;
+            for (int i = 0; i < this.lengthOfSteps; i++) {
+                this.steps[index] = getAngle(currAngle, rotateTo);
+                str += steps[index] + ", ";
+                index++;
+            }
+        }
+
+        MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, "length is: " + this.steps.length + "\n" + str);
+
+        DroneRotation.this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
+
+            @Override
+            public void onResult(DJIError djiError) {
+                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, "STARTING ON SLOW THREAD");
+                Thread thread = new Thread(DroneRotation.this);
+                thread.start();
+            }
+        });
+
     }
 }
