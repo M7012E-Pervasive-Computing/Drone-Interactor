@@ -24,13 +24,15 @@
         android:layout_width="570dp"
         android:layout_height="45dp"
         android:layout_marginStart="274dp"
+        android:layout_marginTop="26dp"
         android:layout_marginEnd="300dp"
         android:text="Insert name"
         android:textColor="#FFFFFF"
         android:textSize="34sp"
         app:layout_constraintBottom_toTopOf="@+id/nameInput"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/distanceY" />
+        app:layout_constraintStart_toEndOf="@+id/distanceY"
+        app:layout_constraintTop_toBottomOf="@+id/rotateAndScan" />
 
     <Button
         android:id="@+id/startButton"
@@ -50,11 +52,25 @@
         android:layout_height="91dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="18dp"
-        android:backgroundTint="@android:color/holo_blue_light"
+        android:backgroundTint="@color/colorAccent"
         android:text="Rotate Left"
         android:textColor="#4E342E"
         app:layout_constraintStart_toEndOf="@+id/distanceX"
         app:layout_constraintTop_toBottomOf="@+id/startButton" />
+
+    <Button
+        android:id="@+id/rotateAndScan"
+        android:layout_width="250dp"
+        android:layout_height="91dp"
+        android:layout_marginStart="121dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="121dp"
+        android:backgroundTint="@color/colorAccent"
+        android:text="Rotate and Scan"
+        android:textColor="#4E342E"
+        app:layout_constraintEnd_toStartOf="@+id/rotateRight"
+        app:layout_constraintStart_toEndOf="@+id/rotateLeft"
+        app:layout_constraintTop_toBottomOf="@+id/pauseButton" />
 
     <Button
         android:id="@+id/rotateRight"
@@ -62,7 +78,7 @@
         android:layout_height="91dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="144dp"
-        android:backgroundTint="@android:color/holo_blue_light"
+        android:backgroundTint="@color/colorAccent"
         android:text="Rotate Right"
         android:textColor="#4E342E"
         app:layout_constraintEnd_toEndOf="parent"
@@ -96,7 +112,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/downwardDistance" />
+        app:layout_constraintStart_toEndOf="@+id/downwardDistance"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group"

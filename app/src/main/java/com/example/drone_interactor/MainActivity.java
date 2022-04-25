@@ -111,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
                 (Switch) findViewById(R.id.downwardOption),
                 (Switch) findViewById(R.id.obstacleAvoidanceOption),
                 (Button) findViewById(R.id.rotateLeft),
-                (Button) findViewById(R.id.rotateRight));
+                (Button) findViewById(R.id.rotateRight),
+                (Button) findViewById(R.id.rotateAndScan));
     }
 
     /**
@@ -170,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    showToast("registering, pls wait...");
                     DJISDKManager.getInstance().registerApp(MainActivity.this.getApplicationContext(), new DJISDKManager.SDKManagerCallback() {
                         @Override
                         public void onRegister(DJIError djiError) {
@@ -302,6 +302,8 @@ public class MainActivity extends AppCompatActivity {
             DroneRotation.getInstance().setAircraft(aircraft, textViews);
             // start the class droneControl with correct parameters
             droneDataProcessing.setup(textViews, aircraft);
+            DroneDriving.getInstance().setAircraft(aircraft, textViews);
+            this.setObstacleAvoidance(true);
             showToast("Started all classes with parameters");
         } catch (Exception e) {
             showToast("Couldn't initialize all classes");

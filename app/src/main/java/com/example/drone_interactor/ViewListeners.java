@@ -31,6 +31,7 @@ public class ViewListeners extends AppCompatActivity {
     private final Switch obstacleAvoidanceOption;
     private final Button rotateLeft;
     private final Button rotateRight;
+    private final Button rotateAndScan;
 
     protected String connectionString = "";
 
@@ -48,7 +49,7 @@ public class ViewListeners extends AppCompatActivity {
      */
     public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
                          Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
-                         Switch obstacleAvoidanceOption, Button rotateLeft, Button rotateRight) {
+                         Switch obstacleAvoidanceOption, Button rotateLeft, Button rotateRight, Button rotateAndScan) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
@@ -60,6 +61,7 @@ public class ViewListeners extends AppCompatActivity {
         this.obstacleAvoidanceOption = obstacleAvoidanceOption;
         this.rotateLeft = rotateLeft;
         this.rotateRight = rotateRight;
+        this.rotateAndScan = rotateAndScan;
 
         // start the listener for the button start. When the button is pressed, the listener will
         // start the DroneDataProcessing, and adds a connectionString to the ConnectionToServer
@@ -117,7 +119,7 @@ public class ViewListeners extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE LEFT");
                 //DroneRotation.getInstance().rotateDrone(-90);
-                DroneRotation.getInstance().slowRotate360();
+                DroneDriving.getInstance().driveOneMeterForward();
             }
         });
 
@@ -126,6 +128,14 @@ public class ViewListeners extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE RIGHT");
                 DroneRotation.getInstance().rotateDrone(90);
+            }
+        });
+
+        this.rotateAndScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Clicked on ROTATE AND SCAN");
+                DroneRotation.getInstance().slowRotate360();
             }
         });
 

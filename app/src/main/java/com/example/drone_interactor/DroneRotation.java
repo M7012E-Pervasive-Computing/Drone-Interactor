@@ -94,6 +94,7 @@ public class DroneRotation implements Runnable {
                 }
             }
             this.slowRotateMode = false;
+            DroneDataProcessing.getInstance().pause();
 
         } else {
             for (int i = 0; i < this.steps.length; i++) {
@@ -159,7 +160,7 @@ public class DroneRotation implements Runnable {
     }
 
     public void rotateDrone(int rotateAngle) {
-        if (this.steps != null) {
+        if (this.steps != null && !DroneDriving.getInstance().allowRotation()) {
             return;
         }
         double yaw = this.currentAngle;
@@ -197,7 +198,12 @@ public class DroneRotation implements Runnable {
         });
     }
 
+    public boolean allowDriving() {
+        return this.steps == null;
+    }
+
     private void doRotate(double degree) {
+        this.flightController.setYawControlMode(YawControlMode.ANGLE);
         DroneRotation.this.flightController.sendVirtualStickFlightControlData(new FlightControlData(0f, 0f, (float) degree, 0f), new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {  }
@@ -213,9 +219,10 @@ public class DroneRotation implements Runnable {
     }
     
     public void slowRotate360() {
-        if (this.steps != null) {
+        if (this.steps != null && !DroneDriving.getInstance().allowRotation()) {
             return;
         }
+        DroneDataProcessing.getInstance().startAll();
         int degreesChanges = 20;
         this.lengthOfSteps = 5;
         this.slowRotateMode = true;
