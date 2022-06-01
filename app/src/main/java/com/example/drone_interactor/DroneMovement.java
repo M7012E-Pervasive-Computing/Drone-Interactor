@@ -48,7 +48,7 @@ public class DroneMovement implements Runnable {
         this.flightController.setVirtualStickAdvancedModeEnabled(true);
         // this.flightController.setYawControlMode(YawControlMode.ANGLE);
         this.flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
-        this.rotateDrone(0);
+        // this.rotateDrone(0);
     }
 
     private DroneMovement() { }
@@ -95,19 +95,14 @@ public class DroneMovement implements Runnable {
                 DroneDataProcessing.getInstance().pause();
 
             } else {
-                Log.i(TAG, "GETS TO RUN");
-                Log.d(TAG, "CURRENT ANGLE: " + this.currentAngle);
                 for (int i = 0; i < this.steps.length; i++) {
                     try {
-                        Log.i(TAG, "INSIDE LOOP: " + i);
                         Thread.sleep(this.delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
                         return;
                     }
-                    Log.i(TAG, "DOING ROTATE");
-                    Log.d(TAG, "ROTATING TO: " + this.steps[i]);
                     this.sendMovementData(new FlightControlData(0f, 0f, (float) this.steps[i], 0f));
                 }
                 if (this.callOnSlowRotate) {
@@ -116,7 +111,6 @@ public class DroneMovement implements Runnable {
                         @Override
                         public void onResult(DJIError djiError) {
                             // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
-                            Log.i(TAG, "SETTING NULL");
                             DroneMovement.this.steps = null;
                             DroneMovement.this.slowRotate360();
                             MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone rotation");
@@ -136,31 +130,14 @@ public class DroneMovement implements Runnable {
                 }
                 this.sendMovementData(new FlightControlData(0f, (float) this.steps[i], 0f, 0f));
             }
-            if (this.lastWasRotation) {
-                this.lastWasRotation = false;
-                DroneMovement.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
-                    @Override
-                    public void onResult(DJIError djiError) {
-                        // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
-                        Log.i(TAG, "SETTING NULL");
-                        DroneMovement.this.steps = null;
-                        DroneMovement.this.driveOneMeterForward();
-                        MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone rotation");
-                    }
-                });
-                return;
-            } else {
-                DroneDataProcessing.getInstance().gridNetwork();
-            }
+            DroneDataProcessing.getInstance().gridNetwork();
         }
 
 
-        Log.i(TAG, "SETTING FALSE");
         DroneMovement.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
                 // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
-                Log.i(TAG, "SETTING NULL");
                 DroneMovement.this.steps = null;
                 MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone rotation");
             }
@@ -189,15 +166,19 @@ public class DroneMovement implements Runnable {
         this.flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
         this.flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
 
-        int length = (1000 / delay) + 2;
+        int addingInt = 6;
+        int length = (1000 / delay) + addingInt * 2;
         double[] steps = new double[length];
         String str = "";
-        for (int i = 0; i < steps.length - 2; i++) {
+        for (int i = 0; i < steps.length; i++) {
+            if (i < addingInt || i >= steps.length - addingInt) {
+                steps[i] = 0;
+                str += steps[i] + ", ";
+                continue;
+            }
             steps[i] = 0.96; // 1 meter / second
             str += steps[i] + ", ";
         }
-        steps[length - 2] = 0;
-        steps[length - 1] = 0;
 
         MainActivity.getInstance().setText(this.textViews.debugText, str + " length " + steps.length);
         this.steps = steps;
@@ -225,11 +206,11 @@ public class DroneMovement implements Runnable {
         this.flightController.setYawControlMode(YawControlMode.ANGLE);
 
         double yaw = this.currentAngle;
-        int length = 10;
+        int length = 17;
         if (Math.abs(rotateAngle) < 50) {
-            length = 6;
+            length = 10;
         } else if (Math.abs(rotateAngle) > 130) {
-            length = 14;
+            length = 22;
         }
         Log.i(TAG, "length" + length);
 
