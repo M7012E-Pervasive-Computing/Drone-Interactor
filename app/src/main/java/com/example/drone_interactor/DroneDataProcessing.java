@@ -38,6 +38,7 @@ public class DroneDataProcessing {
     public ArrayList<DataPoint> dataPoints;
 
     public DataPoint currentPosition; // in meters distance from start
+    public DataPoint gridPosition;
 
     public double currentAngle;
     public double height = 0;
@@ -78,6 +79,7 @@ public class DroneDataProcessing {
     public void setup(TextViews textViews, Aircraft aircraft) {
         this.textViews = textViews;
         this.currentPosition = new DataPoint(0, 0, 0);
+        this.gridPosition = new DataPoint(0, 0, 0);
         this.dataPoints = new ArrayList<DataPoint>();
         this.aircraft = aircraft;
         this.startPositionListener();
@@ -163,7 +165,7 @@ public class DroneDataProcessing {
                     DroneDataProcessing.this.setDroneStatus(flightControllerState.areMotorsOn());
                     DroneDataProcessing.this.setCurrentAngleAndHeight(flightControllerState.getAttitude().yaw, flightControllerState.getUltrasonicHeightInMeters());
                 }
-                DroneRotation.getInstance().setYaw(flightControllerState.getAttitude().yaw);
+                DroneMovement.getInstance().setYaw(flightControllerState.getAttitude().yaw);
             }
         });
     }
@@ -240,6 +242,7 @@ public class DroneDataProcessing {
         }
         this.dataPoints = new ArrayList<DataPoint>();
         this.currentPosition = new DataPoint(0, 0, 0);
+        this.gridPosition = new DataPoint(0, 0, 0);
         this.height = 0;
         this.isStarted = false;
         // disconnect
@@ -295,12 +298,30 @@ public class DroneDataProcessing {
         double newZ = this.currentPosition.getZ() + zVelocity * (dtMillis / 1000);
         this.currentPosition.setData(newX, newY, newZ);
 
+//        MainActivity.getInstance().setText(this.textViews.distanceX, "x: " +
+//                (double)(round(newX * 100)) / 100);
+//        MainActivity.getInstance().setText(this.textViews.distanceY, "y: " +
+//                (double)(round(newY * 100)) / 100);
+//        MainActivity.getInstance().setText(this.textViews.distanceZ, "z: " +
+//                (double)(round(newZ * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceX, "x: " +
-                (double)(round(newX * 100)) / 100);
+                (double)(round(this.gridPosition.getX() * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceY, "y: " +
-                (double)(round(newY * 100)) / 100);
+                (double)(round(this.gridPosition.getY() * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceZ, "z: " +
-                (double)(round(newZ * 100)) / 100);
+                (double)(round(this.gridPosition.getZ() * 100)) / 100);
+    }
+
+    public void gridNetwork() {
+        double angle = this.currentAngle;
+
+        double xPlace = this.gridPosition.getX() +
+                1 * Math.cos(Math.toRadians(angle)); // 1 meter
+        double yPlace = this.gridPosition.getY() +
+                1 * Math.sin(Math.toRadians(angle)); // 1 meter
+
+        this.gridPosition = new DataPoint(xPlace, yPlace, this.gridPosition.getZ());
+
     }
 
     /**
@@ -318,6 +339,8 @@ public class DroneDataProcessing {
         this.height = height;
         MainActivity.getInstance().setText(this.textViews.downwardDistance,
                 "Downward: " + Double.valueOf(round(height * 100)) / 100);
+
+        this.gridPosition.setData(this.gridPosition.getX(), this.gridPosition.getY(), this.height);
     }
 
     private void setDroneStatus(Boolean motorsOn) {
@@ -355,22 +378,32 @@ public class DroneDataProcessing {
                 if ((!this.forwardOption && (i < 22 || i > 67) ) || (!this.backwardOption && (i > 22 && i < 67))) {
                     continue;
                 }
-                double xPlace = this.currentPosition.getX() +
+
+//                double xPlace = this.currentPosition.getX() +
+//                        Double.valueOf(horizontalDistances[i]) / 1000 *
+//                        Math.cos(Math.toRadians(angle + i * angleDifference));
+//                double yPlace = this.currentPosition.getY() +
+//                        Double.valueOf(horizontalDistances[i]) / 1000 *
+//                        Math.sin(Math.toRadians(angle + i * angleDifference));
+                double anglePoint = Math.toRadians(angle + i * angleDifference);
+                double xPlace = this.gridPosition.getX() +
                         Double.valueOf(horizontalDistances[i]) / 1000 *
-                        Math.cos(Math.toRadians(angle + i * angleDifference));
-                double yPlace = this.currentPosition.getY() +
+                        Math.cos(anglePoint);
+                double yPlace = this.gridPosition.getY() +
                         Double.valueOf(horizontalDistances[i]) / 1000 *
-                        Math.sin(Math.toRadians(angle + i * angleDifference));
-                this.dataPoints.add(new DataPoint(xPlace, yPlace, -this.currentPosition.getZ()));
+                        Math.sin(anglePoint);
+                this.dataPoints.add(new DataPoint(xPlace, yPlace, this.gridPosition.getZ()));
             }
         }
         // upward data
         if (this.upwardOption && upwardDistance < 60000 && upwardDistance > 0) {
-            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
+//            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
+            this.dataPoints.add(new DataPoint(this.gridPosition.getX(), this.gridPosition.getY(), this.gridPosition.getZ() + upwardDistance / 1000));
         }
         // downward data
         if (this.downwardOption && this.height != 0) {
-            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
+//            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
+            this.dataPoints.add(new DataPoint(this.gridPosition.getX(), this.gridPosition.getY(), 0)); // since floor is at 0
         }
         // sends data points only if there is a 100 or more points in the cache.
         if (this.dataPoints.size() >= 100) {

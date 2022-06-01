@@ -112,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
                 (Switch) findViewById(R.id.obstacleAvoidanceOption),
                 (Button) findViewById(R.id.rotateLeft),
                 (Button) findViewById(R.id.rotateRight),
-                (Button) findViewById(R.id.rotateAndScan));
+                (Button) findViewById(R.id.rotateAndScan),
+                (Button) findViewById(R.id.driveForward));
     }
 
     /**
@@ -299,10 +300,11 @@ public class MainActivity extends AppCompatActivity {
             DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
             // fetch the Aircraft instance from the DJISDKManager
             Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
-            DroneRotation.getInstance().setAircraft(aircraft, textViews);
+            // DroneRotation.getInstance().setAircraft(aircraft, textViews);
             // start the class droneControl with correct parameters
             droneDataProcessing.setup(textViews, aircraft);
-            DroneDriving.getInstance().setAircraft(aircraft, textViews);
+            // DroneDriving.getInstance().setAircraft(aircraft, textViews);
+            DroneMovement.getInstance().setAircraft(aircraft, textViews);
             this.setObstacleAvoidance(true);
             showToast("Started all classes with parameters");
         } catch (Exception e) {
@@ -339,7 +341,9 @@ public class MainActivity extends AppCompatActivity {
         if (baseProduct == null) {
             ((TextView) findViewById(R.id.name)).setText("Disconnected");
         } else {
-            ((TextView) findViewById(R.id.name)).setText("Connected to " + baseProduct.getModel().getDisplayName());
+            if (baseProduct.getModel() != null && baseProduct.getModel().getDisplayName() != null) {
+                ((TextView) findViewById(R.id.name)).setText("Connected to " + baseProduct.getModel().getDisplayName());
+            }
         }
     }
 

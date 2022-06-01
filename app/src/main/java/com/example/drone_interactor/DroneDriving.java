@@ -1,5 +1,7 @@
 package com.example.drone_interactor;
 
+import android.util.Log;
+
 import java.util.Timer;
 
 import dji.common.error.DJIError;
@@ -19,6 +21,9 @@ public class DroneDriving implements Runnable {
     private static DroneDriving INSTANCE;
     private Timer sendVirtualStickDataTimer;
     private double[] steps;
+
+    private static final String TAG = DroneDriving.class.getName();
+
 
     private final int delay = 100;
 
@@ -60,21 +65,31 @@ public class DroneDriving implements Runnable {
             @Override
             public void onResult(DJIError djiError) {
                 // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
+                DroneDataProcessing.getInstance().gridNetwork();
+                DroneDriving.this.steps = null;
+                MainActivity.getInstance().setText(DroneDriving.this.textViews.debugText, "Setting steps to null in drone driving");
+                Thread.currentThread().interrupt();
             }
         });
 
-        this.steps = null;
     }
 
     public void driveOneMeterForward() {
-        if (this.steps != null && !DroneRotation.getInstance().allowDriving()) {
+        if (this.steps != null || !DroneRotation.getInstance().allowDriving()) {
             return;
         }
+        Log.i(TAG, "Drive one meter");
+
+        this.flightController.setRollPitchControlMode(RollPitchControlMode.VELOCITY);
+        this.flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
+        this.flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+
+
         int length = (1000 / delay) + 2;
         double[] steps = new double[length];
         String str = "";
         for (int i = 0; i < steps.length - 2; i++) {
-            steps[i] = 1; // 1 meter / second
+            steps[i] = 0.96; // 1 meter / second
             str += steps[i] + ", ";
         }
         steps[length - 2] = 0;
@@ -86,11 +101,14 @@ public class DroneDriving implements Runnable {
         DroneDriving.this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
+
+                Log.i(TAG, "SET VIRTUAL STICK TO TRUE");
                 // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
                 Thread thread = new Thread(DroneDriving.this);
                 thread.start();
             }
         });
+
     }
 
     public boolean allowRotation() {
@@ -100,10 +118,20 @@ public class DroneDriving implements Runnable {
     private void doMove(double velocity) {
         this.flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
         this.flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
-        DroneDriving.this.flightController.sendVirtualStickFlightControlData(new FlightControlData(0f, (float) velocity, 0f, 0f), new CommonCallbacks.CompletionCallback() {
-            @Override
-            public void onResult(DJIError djiError) {  }
-        });
+        DroneRotation.getInstance().sendMovementData(new FlightControlData(0f, (float) velocity, 0f, 0f));
+//        DroneDriving.this.flightController.setVirtualStickAdvancedModeEnabled(true);
+//        this.flightController.setYawControlMode(YawControlMode.ANGULAR_VELOCITY);
+//        this.flightController.setRollPitchCoordinateSystem(FlightCoordinateSystem.BODY);
+//        DroneDriving.this.flightController.sendVirtualStickFlightControlData(new FlightControlData(0f, (float) velocity, 0f, 0f), new CommonCallbacks.CompletionCallback() {
+//            @Override
+//            public void onResult(DJIError djiError) {
+//                if (djiError != null) {
+//                    Log.w(TAG, "DJI ERROR IS" + djiError.getDescription());
+//                }
+//                Log.i(TAG, "ON RESULT IN DO Move " );
+//            }
+//        });
+//        DroneDriving.this.flightController.setVirtualStickAdvancedModeEnabled(false);
     }
 
 }

@@ -32,6 +32,7 @@ public class ViewListeners extends AppCompatActivity {
     private final Button rotateLeft;
     private final Button rotateRight;
     private final Button rotateAndScan;
+    private final Button driveForward;
 
     protected String connectionString = "";
 
@@ -49,7 +50,7 @@ public class ViewListeners extends AppCompatActivity {
      */
     public ViewListeners(Button startButton, Button stopButton, EditText ipAndPort, Button pauseButton,
                          Switch forwardOption, Switch backwardOption, Switch upwardOption, Switch downwardOption,
-                         Switch obstacleAvoidanceOption, Button rotateLeft, Button rotateRight, Button rotateAndScan) {
+                         Switch obstacleAvoidanceOption, Button rotateLeft, Button rotateRight, Button rotateAndScan, Button driveForward) {
         this.startButton = startButton;
         this.stopButton = stopButton;
         this.ipAndPort = ipAndPort;
@@ -62,6 +63,7 @@ public class ViewListeners extends AppCompatActivity {
         this.rotateLeft = rotateLeft;
         this.rotateRight = rotateRight;
         this.rotateAndScan = rotateAndScan;
+        this.driveForward = driveForward;
 
         // start the listener for the button start. When the button is pressed, the listener will
         // start the DroneDataProcessing, and adds a connectionString to the ConnectionToServer
@@ -118,8 +120,7 @@ public class ViewListeners extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE LEFT");
-                //DroneRotation.getInstance().rotateDrone(-90);
-                DroneDriving.getInstance().driveOneMeterForward();
+                DroneMovement.getInstance().rotateDrone(-90);
             }
         });
 
@@ -127,7 +128,7 @@ public class ViewListeners extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE RIGHT");
-                DroneRotation.getInstance().rotateDrone(90);
+                DroneMovement.getInstance().rotateDrone(90);
             }
         });
 
@@ -135,9 +136,19 @@ public class ViewListeners extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Clicked on ROTATE AND SCAN");
-                DroneRotation.getInstance().slowRotate360();
+                DroneMovement.getInstance().slowRotate360();
             }
         });
+
+        this.driveForward.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Clicked on DRIVE FORWARD");
+                DroneMovement.getInstance().driveOneMeterForward();
+            }
+        });
+
+        // 108, 103, 108, 107, 109, 111, 108, 111, 235 / 2
 
         // start the listener for the forward option switch. When the switch is changed, the listener
         // will set the forward option to the new value in DroneDataProcessing
