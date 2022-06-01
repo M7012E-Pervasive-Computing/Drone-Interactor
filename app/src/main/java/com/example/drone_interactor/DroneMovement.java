@@ -24,8 +24,6 @@ public class DroneMovement implements Runnable {
     private static DroneMovement INSTANCE;
     private double currentAngle;
     private int lengthOfSteps;
-    private boolean lastWasRotation = false;
-    private boolean callOnSlowRotate = false;
 
     private static final String TAG = DroneMovement.class.getName();
 
@@ -63,7 +61,6 @@ public class DroneMovement implements Runnable {
                         Thread.sleep(this.delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
                         return;
                     }
                     this.sendMovementData(new FlightControlData(0f, 0f, (float) this.steps[i], 0f));
@@ -73,50 +70,32 @@ public class DroneMovement implements Runnable {
                         this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
                             @Override
                             public void onResult(DJIError djiError) {
-                                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
                             }
                         });
                         try {
                             Thread.sleep(1500);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                            // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
                             return;
                         }
                         this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
                             @Override
                             public void onResult(DJIError djiError) {
-                                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
                             }
                         });
                     }
                 }
                 this.slowRotateMode = false;
                 DroneDataProcessing.getInstance().pause();
-
             } else {
                 for (int i = 0; i < this.steps.length; i++) {
                     try {
                         Thread.sleep(this.delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
-                        // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
                         return;
                     }
                     this.sendMovementData(new FlightControlData(0f, 0f, (float) this.steps[i], 0f));
-                }
-                if (this.callOnSlowRotate) {
-                    this.callOnSlowRotate = false;
-                    DroneMovement.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
-                        @Override
-                        public void onResult(DJIError djiError) {
-                            // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
-                            DroneMovement.this.steps = null;
-                            DroneMovement.this.slowRotate360();
-                            MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone rotation");
-                        }
-                    });
-                    return;
                 }
             }
         } else {
@@ -125,7 +104,6 @@ public class DroneMovement implements Runnable {
                     Thread.sleep(this.delay);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, e.getMessage());
                     return;
                 }
                 this.sendMovementData(new FlightControlData(0f, (float) this.steps[i], 0f, 0f));
@@ -137,9 +115,8 @@ public class DroneMovement implements Runnable {
         DroneMovement.this.flightController.setVirtualStickModeEnabled(false, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
-                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
                 DroneMovement.this.steps = null;
-                MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone rotation");
+                MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, "Setting steps to null in drone movement");
             }
         });
     }
@@ -186,21 +163,16 @@ public class DroneMovement implements Runnable {
         this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
-
-                Log.i(TAG, "SET VIRTUAL STICK TO TRUE");
-                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, DroneRotation.this.flightController.isVirtualStickControlModeAvailable() + "--");
                 Thread thread = new Thread(DroneMovement.this);
                 thread.start();
             }
         });
-
     }
 
     public void rotateDrone(int rotateAngle) {
         if (this.steps != null) {
             return;
         }
-        this.lastWasRotation = true;
         this.shouldRotate = true;
         this.flightController.setVerticalControlMode(VerticalControlMode.VELOCITY);
         this.flightController.setYawControlMode(YawControlMode.ANGLE);
@@ -212,7 +184,6 @@ public class DroneMovement implements Runnable {
         } else if (Math.abs(rotateAngle) > 130) {
             length = 22;
         }
-        Log.i(TAG, "length" + length);
 
         double[] steps = new double[length]; // 10 is best for 90 degrees
         double rotateTo = this.getAngle(yaw, rotateAngle);
@@ -229,11 +200,7 @@ public class DroneMovement implements Runnable {
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError != null) {
-                    Log.i(TAG, "ERROR IS " + djiError.getDescription());
                 }
-
-                Log.i(TAG, "SET VIRTUAL STICK TO TRUE");
-                // MainActivity.getInstance().setText(DroneMovement.this.textViews.debugText, DroneMovement.this.flightController.isVirtualStickControlModeAvailable() + "--");
                 Thread thread = new Thread(DroneMovement.this);
                 thread.start();
             }
@@ -248,11 +215,6 @@ public class DroneMovement implements Runnable {
         if (this.steps != null) {
             return;
         }
-        if (!this.lastWasRotation) {
-            this.callOnSlowRotate = true;
-            this.rotateDrone(0);
-        }
-        this.lastWasRotation = true;
         this.shouldRotate = true;
         DroneDataProcessing.getInstance().startAll();
         int degreesChanges = 20;
@@ -272,28 +234,22 @@ public class DroneMovement implements Runnable {
 
         MainActivity.getInstance().setText(this.textViews.debugText, "length is: " + this.steps.length + "\n" + str);
 
-
         this.flightController.setVirtualStickModeEnabled(true, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
-                // MainActivity.getInstance().setText(DroneRotation.this.textViews.debugText, "STARTING ON SLOW THREAD");
                 Thread thread = new Thread(DroneMovement.this);
                 thread.start();
             }
         });
     }
 
-
     private void sendMovementData(FlightControlData data) {
         this.flightController.sendVirtualStickFlightControlData(data, new CommonCallbacks.CompletionCallback() {
             @Override
             public void onResult(DJIError djiError) {
                 if (djiError != null) {
-                    Log.w(TAG, "DJI ERROR IS" + djiError.getDescription());
                 }
             }
         });
     }
-
-
 }
