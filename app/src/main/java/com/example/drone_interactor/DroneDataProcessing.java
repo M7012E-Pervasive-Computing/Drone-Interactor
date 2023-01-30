@@ -177,7 +177,6 @@ public class DroneDataProcessing {
         if (this.aircraft == null) {
             return;
         }
-        // this.aircraft.getFlightController().setStateCallback(null);
     }
 
     /**
@@ -255,10 +254,10 @@ public class DroneDataProcessing {
      * Called via a button on the app.
      */
     public void startAll() {
+        // start sending data
         this.startPositionListener();
         this.startSensorListener();
         this.isStarted = true;
-        // start sending data
     }
 
     /**
@@ -268,6 +267,7 @@ public class DroneDataProcessing {
     public void pause() {
         // stop sending data
         try {
+            // sends the already gathered data
             if (this.dataPoints.size() > 0) {
                 this.sendData();
             }
@@ -298,12 +298,6 @@ public class DroneDataProcessing {
         double newZ = this.currentPosition.getZ() + zVelocity * (dtMillis / 1000);
         this.currentPosition.setData(newX, newY, newZ);
 
-//        MainActivity.getInstance().setText(this.textViews.distanceX, "x: " +
-//                (double)(round(newX * 100)) / 100);
-//        MainActivity.getInstance().setText(this.textViews.distanceY, "y: " +
-//                (double)(round(newY * 100)) / 100);
-//        MainActivity.getInstance().setText(this.textViews.distanceZ, "z: " +
-//                (double)(round(newZ * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceX, "x: " +
                 (double)(round(this.gridPosition.getX() * 100)) / 100);
         MainActivity.getInstance().setText(this.textViews.distanceY, "y: " +
@@ -379,12 +373,6 @@ public class DroneDataProcessing {
                     continue;
                 }
 
-//                double xPlace = this.currentPosition.getX() +
-//                        Double.valueOf(horizontalDistances[i]) / 1000 *
-//                        Math.cos(Math.toRadians(angle + i * angleDifference));
-//                double yPlace = this.currentPosition.getY() +
-//                        Double.valueOf(horizontalDistances[i]) / 1000 *
-//                        Math.sin(Math.toRadians(angle + i * angleDifference));
                 double anglePoint = Math.toRadians(angle + i * angleDifference);
                 double xPlace = this.gridPosition.getX() +
                         Double.valueOf(horizontalDistances[i]) / 1000 *
@@ -397,12 +385,10 @@ public class DroneDataProcessing {
         }
         // upward data
         if (this.upwardOption && upwardDistance < 60000 && upwardDistance > 0) {
-//            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.currentPosition.getZ() + upwardDistance / 1000));
             this.dataPoints.add(new DataPoint(this.gridPosition.getX(), this.gridPosition.getY(), this.gridPosition.getZ() + upwardDistance / 1000));
         }
         // downward data
         if (this.downwardOption && this.height != 0) {
-//            this.dataPoints.add(new DataPoint(this.currentPosition.getX(), this.currentPosition.getY(), -this.height - this.currentPosition.getZ())); // since Z is negative for higher height values
             this.dataPoints.add(new DataPoint(this.gridPosition.getX(), this.gridPosition.getY(), 0)); // since floor is at 0
         }
         // sends data points only if there is a 100 or more points in the cache.

@@ -12,7 +12,6 @@ import android.widget.Switch;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.drone_interactor.DroneRotation;
 
-
 /**
  * A class which contains all the UI listeners which is necessary for the app.
  */
@@ -148,8 +147,6 @@ public class ViewListeners extends AppCompatActivity {
             }
         });
 
-        // 108, 103, 108, 107, 109, 111, 108, 111, 235 / 2
-
         // start the listener for the forward option switch. When the switch is changed, the listener
         // will set the forward option to the new value in DroneDataProcessing
         this.forwardOption.setChecked(true);
@@ -203,6 +200,5 @@ public class ViewListeners extends AppCompatActivity {
                 MainActivity.getInstance().setObstacleAvoidance(isChecked);
             }
         });
-
     }
 }

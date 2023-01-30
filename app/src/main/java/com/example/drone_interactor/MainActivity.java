@@ -189,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
                                 showToast("Register sdk fails, please check the bundle id and network connection!");
                             }
                             Log.v(TAG, djiError.getDescription());
-
                         }
 
                         @Override
@@ -203,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this.setDisplayContent(null);
                                 }
                             });
-
                         }
+
                         @Override
                         public void onProductConnect(BaseProduct baseProduct) {
                             Log.d(TAG, String.format("onProductConnect newProduct:%s", baseProduct));
@@ -256,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
                                             newComponent));
 
                         }
+
                         @Override
                         public void onInitProcess(DJISDKInitEvent djisdkInitEvent, int i) {
                             Log.d(TAG, "init process: " + djisdkInitEvent);
@@ -300,17 +300,14 @@ public class MainActivity extends AppCompatActivity {
             DroneDataProcessing droneDataProcessing = DroneDataProcessing.getInstance();
             // fetch the Aircraft instance from the DJISDKManager
             Aircraft aircraft = (Aircraft)DJISDKManager.getInstance().getProduct();
-            // DroneRotation.getInstance().setAircraft(aircraft, textViews);
             // start the class droneControl with correct parameters
             droneDataProcessing.setup(textViews, aircraft);
-            // DroneDriving.getInstance().setAircraft(aircraft, textViews);
             DroneMovement.getInstance().setAircraft(aircraft, textViews);
             this.setObstacleAvoidance(true);
             showToast("Started all classes with parameters");
         } catch (Exception e) {
             showToast("Couldn't initialize all classes");
         }
-
     }
 
     /**
